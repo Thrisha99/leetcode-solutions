@@ -82,6 +82,53 @@ for (int right = 0; right < nums.length; right++) {
     }
 
 }
+---
+
+# Variable Sliding Window Patterns
+
+## Minimum Window
+
+Expand
+
+↓
+
+Condition becomes true
+
+↓
+
+Shrink
+
+↓
+
+Find minimum
+
+Example
+
+- 209. Minimum Size Subarray Sum
+
+---
+
+## Maximum Window
+
+Expand
+
+↓
+
+Constraint is satisfied
+
+↓
+
+Shrink only when the constraint breaks
+
+↓
+
+Find maximum
+
+Examples
+
+- 1004. Max Consecutive Ones III
+- 424. Longest Repeating Character Replacement
+- 904. Fruit Into Baskets
 ```
 
 ---
@@ -789,3 +836,220 @@ Examples
 - 209
 - Longest Substring Without Repeating Characters
 - Minimum Window Substring
+
+---
+
+# Problem 1004 - Max Consecutive Ones III
+
+## Actual Pattern
+
+Variable Size Sliding Window
+
+---
+
+## Key Observation
+
+We can flip at most **k** zeroes.
+
+Instead of actually flipping them,
+
+maintain a window that contains at most **k** zeroes.
+
+If the number of zeroes becomes greater than **k**,
+
+the window becomes invalid.
+
+Shrink it until it becomes valid again.
+
+The largest valid window is the answer.
+
+---
+
+## Pattern
+
+Expand
+
+↓
+
+Count zeroes
+
+↓
+
+Zeroes > k ?
+
+↓
+
+YES
+
+↓
+
+Shrink
+
+↓
+
+Repeat
+
+---
+
+## Dry Run
+
+Input
+
+nums = [1,1,1,0,0,0,1,1,1,1,0]
+
+k = 2
+
+Window
+
+[1,1,1]
+
+Zero Count = 0
+
+Expand
+
+↓
+
+[1,1,1,0]
+
+Zero Count = 1
+
+Expand
+
+↓
+
+[1,1,1,0,0]
+
+Zero Count = 2
+
+Valid
+
+Expand
+
+↓
+
+[1,1,1,0,0,0]
+
+Zero Count = 3
+
+Invalid
+
+Shrink until
+
+Zero Count = 2
+
+Continue
+
+Update maximum window length whenever the window is valid.
+
+---
+
+## Window Movement
+
+Zero Count ≤ k
+
+↓
+
+Expand
+
+(right++)
+
+----------------------
+
+Zero Count > k
+
+↓
+
+Shrink
+
+(left++)
+
+Decrease zero count when a zero leaves the window.
+
+---
+
+## Trick
+
+Whenever the problem says:
+
+- At most k
+- Can change at most k elements
+- Flip at most k zeroes
+- Replace at most k characters
+
+Think:
+
+Variable Sliding Window
+
+Maintain the count of invalid elements.
+
+---
+
+## Common Mistakes
+
+❌ Actually flipping the zeroes
+
+❌ Forgetting to decrease zeroCount while shrinking
+
+❌ Using if instead of while
+
+❌ Updating the answer before making the window valid
+
+---
+
+## Interview Question
+
+Why do we shrink only when zeroCount > k?
+
+Because the window is valid as long as it contains at most **k** zeroes.
+
+We only need to shrink when the constraint is violated.
+
+Time Complexity
+
+O(n)
+
+Space Complexity
+
+O(1)
+
+---
+
+# Variable Sliding Window Comparison
+
+## 209. Minimum Size Subarray Sum
+
+Goal
+
+Find the **smallest** valid window.
+
+Condition
+
+sum ≥ target
+
+Shrink immediately after the condition becomes true.
+
+---
+
+## 1004. Max Consecutive Ones III
+
+Goal
+
+Find the **largest** valid window.
+
+Condition
+
+zeroCount ≤ k
+
+Shrink only when the condition becomes false.
+
+---
+
+### Memory Trick
+
+Need the **minimum** window?
+
+➡️ Shrink as soon as the condition is satisfied.
+
+Need the **maximum** window?
+
+➡️ Keep expanding while the window is valid.
