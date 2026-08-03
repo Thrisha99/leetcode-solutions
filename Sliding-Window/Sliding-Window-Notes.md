@@ -1053,3 +1053,158 @@ Need the **minimum** window?
 Need the **maximum** window?
 
 ➡️ Keep expanding while the window is valid.
+
+---
+
+# Problem 1493 - Longest Subarray of 1's After Deleting One Element
+
+## Actual Pattern
+
+Variable Size Sliding Window
+
+---
+
+## Key Observation
+
+Exactly one element must be deleted.
+
+Instead of deleting it explicitly,
+
+allow the window to contain at most one zero.
+
+The zero represents the deleted element.
+
+---
+
+## Pattern
+
+Expand
+
+↓
+
+Count zeroes
+
+↓
+
+Zeroes > 1
+
+↓
+
+Shrink
+
+↓
+
+Repeat
+
+---
+
+## Dry Run
+
+Input
+
+[1,1,0,1]
+
+Window
+
+[1,1,0,1]
+
+Zero Count = 1
+
+Window Length = 4
+
+Delete one zero
+
+Answer = 3
+
+---
+
+Input
+
+[1,1,1]
+
+No zero exists.
+
+One element must still be deleted.
+
+Answer = 2
+
+---
+
+## Window Movement
+
+Zero Count ≤ 1
+
+↓
+
+Expand
+
+(right++)
+
+---------------------
+
+Zero Count > 1
+
+↓
+
+Shrink
+
+(left++)
+
+---
+
+## Trick
+
+Whenever the problem says
+
+Delete one element
+
+or
+
+Ignore one invalid element
+
+Think
+
+Maintain one invalid element inside the window.
+
+---
+
+## Common Mistakes
+
+❌ Returning
+
+right - left + 1
+
+Instead of
+
+right - left
+
+One element must always be deleted.
+
+❌ Forgetting the all-ones case.
+
+❌ Using if instead of while.
+
+---
+
+## Interview Question
+
+Why do we calculate
+
+right - left
+
+instead of
+
+right - left + 1?
+
+Because the current window includes one element that must be deleted.
+
+Subtracting one simulates deleting that element.
+
+Time Complexity
+
+O(n)
+
+Space Complexity
+
+O(1)
+
