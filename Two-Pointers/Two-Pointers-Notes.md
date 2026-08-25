@@ -1270,3 +1270,301 @@ Sort first
 ↓
 
 Then Two Pointers
+
+----------------
+# LeetCode 1470 — Shuffle the Array
+
+## Problem
+
+Given an array `nums` consisting of `2n` elements in the form:
+
+```text
+[x1, x2, ..., xn, y1, y2, ..., yn]
+```
+
+Return the array in the shuffled form:
+
+```text
+[x1, y1, x2, y2, ..., xn, yn]
+```
+
+### Example
+
+Input:
+
+```text
+nums = [2, 5, 1, 3, 4, 7]
+n = 3
+```
+
+Output:
+
+```text
+[2, 3, 5, 4, 1, 7]
+```
+
+---
+
+## Pattern
+
+**Array / Simulation**
+
+This is a straightforward array rearrangement problem.
+
+The input consists of two equal-sized sections:
+
+```text
+X part:
+[x1, x2, x3]
+
+Y part:
+[y1, y2, y3]
+```
+
+We need to take one element alternately from each section:
+
+```text
+x1 → y1 → x2 → y2 → x3 → y3
+```
+
+---
+
+## Brute Force Approach
+
+Use a separate result array.
+
+### Pointers
+
+```text
+i → points to the current X element
+j → points to the current Y element
+k → points to the current position in the result array
+```
+
+Initially:
+
+```text
+i = 0
+j = n
+k = 0
+```
+
+For every pair:
+
+```text
+ans[k] = nums[i]
+ans[k + 1] = nums[j]
+```
+
+Then move all required pointers forward.
+
+---
+
+## Example Walkthrough
+
+Given:
+
+```text
+nums = [2, 5, 1, 3, 4, 7]
+n = 3
+```
+
+The array is divided as:
+
+```text
+X = [2, 5, 1]
+Y = [3, 4, 7]
+```
+
+Initial pointers:
+
+```text
+i = 0
+j = 3
+k = 0
+```
+
+### Iteration 1
+
+```text
+nums[i] = 2
+nums[j] = 3
+```
+
+Result:
+
+```text
+[2, 3]
+```
+
+Pointers:
+
+```text
+i = 1
+j = 4
+k = 2
+```
+
+### Iteration 2
+
+```text
+nums[i] = 5
+nums[j] = 4
+```
+
+Result:
+
+```text
+[2, 3, 5, 4]
+```
+
+Pointers:
+
+```text
+i = 2
+j = 5
+k = 4
+```
+
+### Iteration 3
+
+```text
+nums[i] = 1
+nums[j] = 7
+```
+
+Result:
+
+```text
+[2, 3, 5, 4, 1, 7]
+```
+
+Final output:
+
+```text
+[2, 3, 5, 4, 1, 7]
+```
+
+---
+
+## Code Logic
+
+```text
+Create result array of size 2n
+
+i = 0
+j = n
+k = 0
+
+while k < 2n:
+
+    take nums[i]
+    store in ans[k]
+
+    move i and k
+
+    take nums[j]
+    store in ans[k]
+
+    move j and k
+
+Return ans
+```
+
+---
+
+## Why We Use a Separate Array
+
+The original array contains both the X and Y portions.
+
+If we directly modify `nums`, we may overwrite values that we still need to read.
+
+Example:
+
+```text
+Original:
+[2, 5, 1, 3, 4, 7]
+```
+
+We still need to access both:
+
+```text
+X → [2, 5, 1]
+Y → [3, 4, 7]
+```
+
+Therefore, using:
+
+```java
+int[] ans = new int[2 * n];
+```
+
+keeps the original data unchanged while constructing the shuffled result.
+
+---
+
+## Complexity
+
+### Time Complexity
+
+```text
+O(n)
+```
+
+Each element is processed exactly once.
+
+### Space Complexity
+
+```text
+O(n)
+```
+
+An additional array of size `2n` is created.
+
+---
+
+## Key Takeaway
+
+The important observation is the structure of the input:
+
+```text
+[x1, x2, ..., xn | y1, y2, ..., yn]
+```
+
+The required output alternates between the two halves:
+
+```text
+x1, y1, x2, y2, ..., xn, yn
+```
+
+So maintain one pointer for each half and one pointer for the result.
+
+---
+
+## Pattern Recognition
+
+When you see:
+
+```text
+Two groups of equal size
++
+Need to alternate elements
++
+Output can be stored separately
+```
+
+Think:
+
+**Array Simulation + Multiple Pointers**
+
+---
+
+## Revision Status
+
+**Solved independently after revision:** 🟢
+
+**Approach:** Brute Force / Auxiliary Array
+
+**Time:** O(n)
+
+**Space:** O(n)
