@@ -31,7 +31,8 @@ class Solution {
             }
 
         }
-
+//using this extra loop for the left over elemnts that need to be copied in nums1 from nums2 after comparing them as elemnts 
+        //of nums1 comparison and copying will probably done in case --> Edge case
         while (j >= 0) {
             nums1[k--] = nums2[j--];
         }
