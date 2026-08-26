@@ -652,3 +652,34 @@ O(n)
 Space Complexity
 
 O(1)
+
+# LeetCode 238 - Product of Array Except Self
+
+## Problem Number
+
+238
+
+## Problem Name
+
+Product of Array Except Self
+
+## Difficulty
+
+Medium
+
+## Pattern
+
+**Prefix Product + Suffix Product**
+
+## LeetCode
+
+https://leetcode.com/problems/product-of-array-except-self/
+
+---
+
+# 1. Problem Understanding
+
+Given an integer array `nums`, return an array `answer` where:
+
+```text
+answer[i] = product of every element except nums[i]
