@@ -38,6 +38,18 @@
 // -1000 <= nums[i] <= 1000
 
 
+PIVOT INDEX – KEY LOGIC
+{Subtract current element from totalsum(right) and add it into left sum}
+Total = LEFT + CURRENT + RIGHT
+Initially r = total sum, l = 0 (nothing on the left).
+For each index: first do r -= nums[i] → now r represents RIGHT sum.
+Compare l == r; if equal → current index is the pivot.
+After checking, do l += nums[i] → current becomes part of LEFT for next index.
+Think: 
+l = LEFT | 
+ nums[i] = CURRENT | 
+ r = RIGHT 
+ Time O(n), Space O(1).
 
 
 
