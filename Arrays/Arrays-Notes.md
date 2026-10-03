@@ -1103,3 +1103,552 @@ O(n)
 Space Complexity
 
 O(1)
+
+
+
+
+# LeetCode 121 - Best Time to Buy and Sell Stock
+
+## Problem
+
+Given an array `prices` where:
+
+* `prices[i]` = stock price on day `i`
+* You can buy **once**
+* You can sell **once**
+* You must buy before selling
+
+Return the **maximum profit** you can achieve.
+
+If no profit is possible, return `0`.
+
+---
+
+## Example
+
+```text
+Input:
+prices = [7,1,5,3,6,4]
+
+Output:
+5
+```
+
+### Explanation
+
+Buy at price `1` and sell at price `6`.
+
+```text
+Profit = 6 - 1 = 5
+```
+
+---
+
+# Pattern
+
+```text
+Arrays
+   ↓
+Greedy / One Pass
+   ↓
+Track Minimum Price
+   ↓
+Calculate Current Profit
+   ↓
+Track Maximum Profit
+```
+
+### Core Pattern
+
+> **MIN → PROFIT → MAX**
+
+---
+
+# Main Idea
+
+We scan the array from left to right.
+
+At every day, we need to know:
+
+1. What is the **minimum price** seen so far?
+2. If I sell **today**, what profit can I make?
+3. Is this profit better than my previous maximum profit?
+
+So we maintain two variables:
+
+```java
+int minPrice;
+int maxProfit;
+```
+
+---
+
+# Why Do We Track Minimum Price?
+
+Suppose:
+
+```text
+prices = [7,1,5,3,6,4]
+```
+
+When we reach `5`, the cheapest price before it is `1`.
+
+Therefore:
+
+```text
+Buy = 1
+Sell = 5
+
+Profit = 5 - 1 = 4
+```
+
+When we reach `6`:
+
+```text
+Buy = 1
+Sell = 6
+
+Profit = 6 - 1 = 5
+```
+
+So the maximum profit becomes:
+
+```text
+5
+```
+
+---
+
+# Dry Run
+
+Input:
+
+```text
+[7,1,5,3,6,4]
+```
+
+| Day | Price | Minimum Price | Profit if Sold Today | Maximum Profit |
+| --- | ----: | ------------: | -------------------: | -------------: |
+| 0   |     7 |             7 |                    - |              0 |
+| 1   |     1 |             1 |                    0 |              0 |
+| 2   |     5 |             1 |                    4 |              4 |
+| 3   |     3 |             1 |                    2 |              4 |
+| 4   |     6 |             1 |                    5 |              5 |
+| 5   |     4 |             1 |                    3 |              5 |
+
+Final answer:
+
+```text
+5
+```
+
+---
+
+# Algorithm
+
+### Step 1
+
+Initialize:
+
+```java
+int minPrice = prices[0];
+int maxProfit = 0;
+```
+
+`minPrice` stores the cheapest stock price seen so far.
+
+`maxProfit` stores the best profit found so far.
+
+---
+
+### Step 2
+
+Traverse the array from index `1`.
+
+```java
+for (int i = 1; i < prices.length; i++)
+```
+
+---
+
+### Step 3
+
+If the current price is cheaper:
+
+```java
+if (prices[i] < minPrice) {
+    minPrice = prices[i];
+}
+```
+
+Update the minimum buying price.
+
+---
+
+### Step 4
+
+Calculate today's possible profit:
+
+```java
+int profit = prices[i] - minPrice;
+```
+
+---
+
+### Step 5
+
+Keep the maximum profit:
+
+```java
+maxProfit = Math.max(maxProfit, profit);
+```
+
+---
+
+### Step 6
+
+Return:
+
+```java
+return maxProfit;
+```
+
+---
+
+# Java Solution
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+
+        int minPrice = prices[0];
+        int maxProfit = 0;
+
+        for (int i = 1; i < prices.length; i++) {
+
+            if (prices[i] < minPrice) {
+                minPrice = prices[i];
+            }
+
+            int profit = prices[i] - minPrice;
+
+            maxProfit = Math.max(maxProfit, profit);
+        }
+
+        return maxProfit;
+    }
+}
+```
+
+---
+
+# Simple Logic
+
+Think:
+
+```text
+Find cheapest price
+        ↓
+Assume we sell today
+        ↓
+Today's price - cheapest price
+        ↓
+Keep the best profit
+```
+
+Or remember:
+
+```text
+BUY CHEAP
+   ↓
+SELL TODAY
+   ↓
+CALCULATE PROFIT
+   ↓
+KEEP MAX
+```
+
+---
+
+# Important Observation
+
+We do **not** need to check every possible pair of buying and selling days.
+
+A brute-force approach would compare every pair:
+
+```text
+Buy on day 0 → Sell on day 1
+Buy on day 0 → Sell on day 2
+Buy on day 0 → Sell on day 3
+...
+```
+
+That would take:
+
+```text
+O(n²)
+```
+
+Instead, we remember the cheapest price seen so far.
+
+Therefore, we only need one pass:
+
+```text
+O(n)
+```
+
+---
+
+# Why Does This Work?
+
+When we are at day `i`, the best possible buying day before `i` is simply the day with the **minimum price seen so far**.
+
+Therefore:
+
+```text
+Best profit at day i
+=
+prices[i] - minimum price before i
+```
+
+Then we take the maximum of all these possible profits.
+
+---
+
+# Edge Case 1 - Prices Always Decrease
+
+```text
+prices = [7,6,4,3,1]
+```
+
+There is no profitable transaction.
+
+```text
+Maximum profit = 0
+```
+
+The algorithm correctly returns:
+
+```text
+0
+```
+
+---
+
+# Edge Case 2 - Only One Price
+
+```text
+prices = [5]
+```
+
+There is no possible buy-and-sell transaction.
+
+```text
+Answer = 0
+```
+
+---
+
+# Edge Case 3 - Increasing Prices
+
+```text
+prices = [1,2,3,4,5]
+```
+
+Buy at:
+
+```text
+1
+```
+
+Sell at:
+
+```text
+5
+```
+
+Profit:
+
+```text
+5 - 1 = 4
+```
+
+Answer:
+
+```text
+4
+```
+
+---
+
+# Complexity
+
+### Time Complexity
+
+```text
+O(n)
+```
+
+We traverse the array only once.
+
+### Space Complexity
+
+```text
+O(1)
+```
+
+Only two variables are used:
+
+```java
+minPrice
+maxProfit
+```
+
+---
+
+# Common Mistakes
+
+### Mistake 1: Selling before buying
+
+Wrong:
+
+```text
+prices[i] - future minimum price
+```
+
+The selling day must come **after** the buying day.
+
+---
+
+### Mistake 2: Resetting the minimum incorrectly
+
+We should always maintain:
+
+```text
+minimum price seen so far
+```
+
+---
+
+### Mistake 3: Returning a negative profit
+
+For example:
+
+```text
+[7,6,5,4,3]
+```
+
+There is no profit.
+
+Return:
+
+```text
+0
+```
+
+not:
+
+```text
+-4
+```
+
+---
+
+### Mistake 4: Using nested loops unnecessarily
+
+Avoid:
+
+```java
+for (...) {
+    for (...) {
+    }
+}
+```
+
+This gives `O(n²)`.
+
+The optimal approach is:
+
+```text
+One loop → O(n)
+```
+
+---
+
+# Pattern Recognition
+
+When you see:
+
+* Buy once
+* Sell once
+* Buy before sell
+* Maximize profit
+
+Think:
+
+```text
+TRACK MINIMUM
++
+CALCULATE PROFIT
++
+TRACK MAXIMUM
+```
+
+---
+
+# Quick Revision
+
+```text
+Problem:
+Best Time to Buy and Sell Stock
+
+LeetCode:
+121
+
+Topic:
+Arrays
+
+Pattern:
+Greedy / One Pass
+
+Idea:
+Track minimum price seen so far.
+
+At every price:
+profit = current price - minimum price
+
+Then:
+maxProfit = maximum profit found
+
+Time:
+O(n)
+
+Space:
+O(1)
+
+Memory Trick:
+MIN → PROFIT → MAX
+```
+
+---
+
+# One-Line Interview Explanation
+
+> "I scan the array once while maintaining the minimum stock price seen so far. For each price, I calculate the profit if I sell on that day and update the maximum profit. This gives O(n) time and O(1) space."
+
+---
+
+# Related Problems to Practice Later
+
+This problem is a foundation for more advanced stock problems:
+
+```text
+121 - Best Time to Buy and Sell Stock
+122 - Best Time to Buy and Sell Stock II
+123 - Best Time to Buy and Sell Stock III
+188 - Best Time to Buy and Sell Stock IV
+309 - Best Time to Buy and Sell Stock with Cooldown
+714 - Best Time to Buy and Sell Stock with Transaction Fee
+```
+
+Start with **121**, then move to **122** after the one-transaction logic is comfortable.
