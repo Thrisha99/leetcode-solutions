@@ -51,3 +51,26 @@ class Solution {
         return nums;
     }
 }
+
+
+// Another approach is to calculate the total sum first and then subtract the current element from the total sum to get the running sum
+// . However, this approach is less efficient and not recommended for this problem.
+
+
+// class Solution {
+//     public int[] runningSum(int[] nums) {
+//         int rs=0;
+//         int[] arr=new int[nums.length];
+//         for(int i=0;i<nums.length;i++){
+//             rs+=nums[i];//10
+//         }
+//         int l=0;
+//         for(int i=nums.length-1;i>=0;i--){
+//             int v=nums[i];
+//             arr[i]=rs;
+//             rs-=v;
+
+//         }
+//         return arr;
+//     }
+// }
