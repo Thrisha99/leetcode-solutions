@@ -116,6 +116,12 @@ Example
 
 303. Range Sum Query - Immutable
 
+
+| Problem No. | Problem Name | Difficulty | Approach |
+
+152. | Maximum Product Subarray | Medium | Prefix-Suffix Product Scan |
+
+
 ---
 
 # Advantages
@@ -683,3 +689,98 @@ Given an integer array `nums`, return an array `answer` where:
 
 ```text
 answer[i] = product of every element except nums[i]
+
+
+
+
+
+# LeetCode 152 — Maximum Product Subarray
+
+## Problem Details
+
+- **Problem Number:** 152
+- **Problem Name:** Maximum Product Subarray
+- **Difficulty:** Medium
+- **Main Topic:** Arrays
+- **Pattern:** Prefix-Suffix Product Scan
+- **Related Concept:** Kadane's Algorithm variation
+- **Language:** Java
+- **Time Complexity:** O(n)
+- **Space Complexity:** O(1)
+
+## 1. Problem Statement
+
+Given an integer array `nums`, find a non-empty contiguous subarray that has the largest product and return that product.
+
+A subarray must contain consecutive elements.
+
+## 2. Approach: Prefix-Suffix Product Scan
+
+Instead of generating every possible subarray using nested loops, traverse the array once while calculating products from both directions.
+
+Maintain three variables:
+
+- `p`: Running product from left to right.
+- `s`: Running product from right to left.
+- `max`: Maximum product found so far.
+
+### Steps
+
+1. Initialize `p = 1`, `s = 1`, and `max = Integer.MIN_VALUE`.
+2. Traverse the array using one loop.
+3. If `p == 0`, reset `p = 1` before processing the next element.
+4. If `s == 0`, reset `s = 1` before processing the next element.
+5. Multiply `p` by the current element from the left.
+6. Multiply `s` by the corresponding element from the right.
+7. Update `max` using both running products.
+8. Return `max` after processing the entire array.
+
+## 3. Why Traverse in Both Directions?
+
+Negative numbers can change the sign of a product. A subarray containing two negative numbers may produce a positive product.
+
+Scanning from both ends helps account for different product ranges without enumerating every subarray.
+
+Zero is also important: a product containing zero becomes zero. Resetting a running product to 1 at the beginning of the next iteration allows a new product range to begin beyond that zero.
+
+## 4. Dry Run
+
+Input:
+
+`nums = [2, 3, -2, 4]`
+
+Initial values: `p = 1`, `s = 1`, `max = Integer.MIN_VALUE`.
+
+| Index | Left element | Right element | p | s | max |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 2 | 4 | 2 | 4 | 4 |
+| 1 | 3 | -2 | 6 | -8 | 6 |
+| 2 | -2 | 3 | -12 | -24 | 6 |
+| 3 | 4 | 2 | -48 | -48 | 6 |
+
+Output: `6`
+
+The maximum product comes from the subarray `[2, 3]`.
+
+## 5. Complexity Analysis
+
+- **Time Complexity: O(n)** — each element is processed once from each direction within the same loop.
+- **Auxiliary Space: O(1)** — only a fixed number of variables are used.
+
+## 6. Important Revision Points
+
+- A subarray must be contiguous.
+- The maximum product is not necessarily the product of the entire array.
+- Negative numbers can change a negative product into a positive product.
+- Reset products after encountering zero, before processing the next element.
+- Track the maximum from both the left-to-right and right-to-left products.
+- Initialize `max` with `Integer.MIN_VALUE` so arrays containing only negative numbers are handled correctly.
+
+## 7. Pattern Classification
+
+- Main topic: Arrays
+- Technique: Prefix-Suffix Product Scan
+- Related technique: Kadane's Algorithm variation
+- Optimization: O(n²) brute force to O(n) time
+
+**Memory trick:** Two running products, one from each end; update the answer at every index.
