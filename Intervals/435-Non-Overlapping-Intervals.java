@@ -1,6 +1,20 @@
 
 import java.util.Arrays;
 
+/*
+ * Problem: 435. Non-overlapping Intervals
+ * Difficulty: Medium
+ * Pattern: Greedy, Sorting, Intervals
+ *
+ * Approach:
+ * 1. Sort intervals by ending value.
+ * 2. Keep the interval that ends earliest.
+ * 3. If the next interval overlaps, remove it.
+ * 4. Otherwise, keep it and update the ending value.
+ *
+ * Time Complexity: O(n log n)
+ * Auxiliary Space: O(log n) for sorting, typically.
+ */
 class Solution {
     public int eraseOverlapIntervals(int[][] intervals) {
 
