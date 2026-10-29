@@ -1148,3 +1148,431 @@ Both have linear worst-case time complexity. Reverse traversal improves auxiliar
 The important optimization is replacing `split()` and an array with reverse traversal.
 
 You do not need to store every word to find the last word's length. Start from the end, skip spaces, count characters, and return the result.
+
+
+
+# LeetCode 2000 — Reverse Prefix of Word
+
+**Problem:** [LeetCode 2000](https://leetcode.com/problems/reverse-prefix-of-word/)
+
+**Topic:** Strings  
+**Pattern:** Two Pointers / String Manipulation  
+**Language:** Java
+
+---
+
+## 1. Problem Statement
+
+Given a string `word` and a character `ch`, reverse the prefix of `word` that ends at the **first occurrence** of `ch`.
+
+If `ch` does not exist in `word`, return the original string.
+
+### Examples
+
+| Input | Output |
+|---|---|
+| `word = "abcdefd", ch = 'd'` | `"dcbaefd"` |
+| `word = "xyxzxe", ch = 'z'` | `"zxyxxe"` |
+| `word = "abcd", ch = 'z'` | `"abcd"` |
+
+### Important Observation
+
+Only the prefix ending at the first occurrence of `ch` is reversed.
+
+The remaining suffix must stay unchanged.
+
+---
+
+## 2. Pattern Identification
+
+**Primary pattern:** Two Pointers
+
+The two pointers start at opposite ends of the prefix:
+
+- `i` starts at index `0`.
+- `k` starts at the index of the first occurrence of `ch`.
+
+Swap the characters and move the pointers inward until they meet or cross.
+
+### Why two pointers?
+
+Reversing a sequence means exchanging its first and last characters, then its second and second-last characters, and so on.
+
+This avoids creating a separate reversed sequence when working with a mutable representation.
+
+---
+
+## 3. Approach 1 — Character Array + Two Pointers
+
+### Idea
+
+1. Find the first occurrence of `ch` using `indexOf()`.
+2. If it is absent, return the original string.
+3. Convert `word` to a character array.
+4. Initialize two pointers.
+5. Swap the characters at both pointers.
+6. Move both pointers toward the center.
+7. Return the character array as a new string.
+
+### Java Code
+
+```java
+class Solution {
+    public String reversePrefix(String word, char ch) {
+        int k = word.indexOf(ch);
+
+        if (k == -1) {
+            return word;
+        }
+
+        char[] arr = word.toCharArray();
+        int i = 0;
+
+        while (i < k) {
+            char temp = arr[i];
+            arr[i] = arr[k];
+            arr[k] = temp;
+
+            i++;
+            k--;
+        }
+
+        return new String(arr);
+    }
+}
+```
+
+### Complexity
+
+- **Time:** `O(n)`
+- **Auxiliary space:** `O(n)`
+
+### Advantages
+
+- Uses the two-pointer pattern directly.
+- Performs the swaps without constructing a separate reversed prefix.
+- Easy to trace and explain in interviews.
+
+### Disadvantages
+
+- Creates a character array proportional to the input length.
+- Creates a new `String` from the modified array.
+
+**Recommendation:** Use this as your main LeetCode solution.
+
+---
+
+## 4. Approach 2 — StringBuilder + Two Pointers
+
+### Idea
+
+Java strings are immutable, but `StringBuilder` is mutable.
+
+Instead of creating an explicit character array, create a `StringBuilder` and swap characters using `charAt()` and `setCharAt()`.
+
+### Java Code
+
+```java
+class Solution {
+    public String reversePrefixUsingStringBuilder(
+            String word, char ch) {
+
+        int k = word.indexOf(ch);
+
+        if (k == -1) {
+            return word;
+        }
+
+        StringBuilder sb = new StringBuilder(word);
+        int i = 0;
+
+        while (i < k) {
+            char temp = sb.charAt(i);
+            sb.setCharAt(i, sb.charAt(k));
+            sb.setCharAt(k, temp);
+
+            i++;
+            k--;
+        }
+
+        return sb.toString();
+    }
+}
+```
+
+### Complexity
+
+- **Time:** `O(n)`
+- **Auxiliary space:** `O(n)`
+
+### Advantages
+
+- No explicit `char[]` array in your code.
+- Demonstrates mutable string manipulation.
+- Retains the same two-pointer logic.
+
+### Disadvantages
+
+- `StringBuilder` still stores a mutable copy of the string.
+- It does not improve the asymptotic space complexity.
+
+**Important:** Avoiding a character array does not automatically mean using constant extra space.
+
+---
+
+## 5. Approach 3 — StringBuilder.reverse() + substring()
+
+### Idea
+
+1. Find the first occurrence of `ch`.
+2. Extract the prefix, including `ch`.
+3. Reverse the prefix using `StringBuilder.reverse()`.
+4. Append the suffix without changing it.
+
+### Java Code
+
+```java
+class Solution {
+    public String reversePrefixUsingReverse(
+            String word, char ch) {
+
+        int k = word.indexOf(ch);
+
+        if (k == -1) {
+            return word;
+        }
+
+        String prefix = word.substring(0, k + 1);
+
+        String reversed = new StringBuilder(prefix)
+                .reverse()
+                .toString();
+
+        return reversed + word.substring(k + 1);
+    }
+}
+```
+
+### Complexity
+
+- **Time:** `O(n)`
+- **Auxiliary space:** `O(n)`
+
+### Advantages
+
+- Short and readable.
+- Uses Java's built-in reverse operation.
+- Separates prefix processing from suffix preservation.
+
+### Disadvantages
+
+- Creates intermediate objects for the prefix, reversed prefix, and final result.
+- Does not improve the asymptotic space complexity.
+
+---
+
+## 6. Dry Run — Two-Pointer Approach
+
+### Input
+
+```text
+word = "abcdefd"
+ch = 'd'
+```
+
+The first occurrence of `d` is at index `3`.
+
+The prefix is `"abcd"`. The suffix `"efd"` must remain unchanged.
+
+### Initial state
+
+```text
+word = "abcdefd"
+        0123456
+
+i = 0
+k = 3
+```
+
+### Swap 1
+
+Swap `arr[0]` and `arr[3]`.
+
+```text
+Before: a b c d e f d
+After:  d b c a e f d
+```
+
+Update:
+
+```text
+i = 1
+k = 2
+```
+
+### Swap 2
+
+Swap `arr[1]` and `arr[2]`.
+
+```text
+Before: d b c a e f d
+After:  d c b a e f d
+```
+
+Update:
+
+```text
+i = 2
+k = 1
+```
+
+Now `i < k` is false, so the loop stops.
+
+### Final output
+
+```text
+"dcbaefd"
+```
+
+Only the prefix was reversed.
+
+---
+
+## 7. Why Auxiliary Space Cannot Be O(1) Here
+
+This is an important distinction between algorithmic complexity and Java string behavior.
+
+### A. Java strings are immutable
+
+Once a `String` is created, its characters cannot be changed in place through the normal Java API.
+
+For example, you cannot assign a new character directly to `word.charAt(0)`.
+
+### B. The result is a new string
+
+The required result may differ from the input.
+
+For example:
+
+```text
+Input:  "abcdefd"
+Output: "dcbaefd"
+```
+
+The algorithm must produce a string containing the modified characters.
+
+### C. Your character array needs O(n) space
+
+```java
+char[] arr = word.toCharArray();
+```
+
+If the input contains `n` characters, the array stores `n` characters.
+
+Therefore, its storage grows proportionally to `n`.
+
+The `StringBuilder` approach has the same asymptotic space requirement because it maintains a mutable representation of the string.
+
+### D. Output space versus auxiliary space
+
+These terms are not identical:
+
+- **Output space:** Memory needed to store the returned string.
+- **Auxiliary space:** Additional working memory used by the algorithm, excluding the output under the usual convention.
+
+The returned string itself requires `O(n)` output space. In the standard Java implementations above, the mutable representation also requires `O(n)` auxiliary space.
+
+Therefore:
+
+| Implementation | Time | Auxiliary space |
+|---|---|---|
+| Character array | `O(n)` | `O(n)` |
+| StringBuilder + swaps | `O(n)` | `O(n)` |
+| Reverse prefix + substring | `O(n)` | `O(n)` |
+
+**Can we claim O(1) auxiliary space?**
+
+Not for these standard Java implementations. They all create a mutable representation or intermediate strings whose size can grow with the input.
+
+The two-pointer algorithm itself uses only `O(1)` scalar variables, but the full Java implementation requires additional storage to produce the modified string.
+
+---
+
+## 8. Time Complexity Analysis
+
+Let `n` be the length of `word`.
+
+### `word.indexOf(ch)`
+
+Worst case: `O(n)`.
+
+### `word.toCharArray()`
+
+Copies the characters into an array: `O(n)` time and `O(n)` space.
+
+### Two-pointer loop
+
+At most half of the prefix is swapped. Its worst-case time is `O(n)`.
+
+### `new String(arr)`
+
+Constructs the returned string from the array: `O(n)` time and `O(n)` output storage.
+
+Overall:
+
+- **Time:** `O(n)`
+- **Auxiliary space:** `O(n)`
+
+The overall time remains `O(n)` because the sum of linear operations is linear.
+
+---
+
+## 9. Common Mistakes
+
+- Reversing the prefix at the last occurrence of `ch` instead of the first.
+- Forgetting to move both pointers inward.
+- Swapping characters in a `String` directly instead of using a mutable representation.
+- Reversing the entire string instead of only the prefix.
+- Changing the suffix after the first occurrence of `ch`.
+- Forgetting the case where `ch` is absent.
+- Assuming `StringBuilder` automatically gives `O(1)` space.
+- Confusing the space used by the returned result with auxiliary working space.
+
+---
+
+## 10. Interview Explanation
+
+"I find the first occurrence of the given character and use two pointers to reverse the prefix in a mutable character array. The pointers start at the two ends of the prefix and move toward each other after every swap. If the character does not exist, I return the original string. The algorithm takes O(n) time and O(n) auxiliary space because Java strings are immutable and the implementation uses a mutable copy."
+
+---
+
+## 11. Revision Checklist
+
+- [ ] Explain why `indexOf()` finds the first occurrence.
+- [ ] Identify the prefix and the unchanged suffix.
+- [ ] Trace the two-pointer swaps.
+- [ ] Explain why Java strings are immutable.
+- [ ] Compare `char[]` and `StringBuilder`.
+- [ ] Distinguish output space from auxiliary space.
+- [ ] State time complexity as `O(n)`.
+- [ ] State auxiliary space as `O(n)` for these implementations.
+- [ ] Reimplement the two-pointer solution from memory.
+
+---
+
+## 12. Final Comparison
+
+| Criterion | Character array | StringBuilder swaps | Built-in reverse |
+|---|---|---|---|
+| Time | `O(n)` | `O(n)` | `O(n)` |
+| Auxiliary space | `O(n)` | `O(n)` | `O(n)` |
+| Uses explicit `char[]` | Yes | No | No |
+| Uses two pointers | Yes | Yes | No |
+| Readability | High | High | Very high |
+| Recommended use | Learn two pointers | Practice mutable strings | Concise implementation |
+
+### Key takeaway
+
+Your original solution is already optimal in **asymptotic time complexity**. The `char[]` approach is a good interview solution because the swapping logic is explicit and easy to explain.
+
+Switching to `StringBuilder` can avoid writing an explicit array, but it does not improve the space complexity. All three approaches run in `O(n)` time and use `O(n)` auxiliary space in their standard Java implementations.
