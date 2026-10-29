@@ -877,3 +877,274 @@ Start with a straightforward solution, verify correctness, and then optimize.
 For this problem, the key improvement is moving from storing both halves in arrays to accessing the original string directly. A single counter then tracks the difference between the two vowel counts.
 
 **Recommended revision:** Reimplement the single-counter approach from memory and explain why `count == 0` is sufficient.
+
+
+
+# LeetCode 58 — Length of Last Word
+
+🔗 **Problem Link:** https://leetcode.com/problems/length-of-last-word/
+
+## 1. Problem Statement
+
+Given a string `s` consisting of words and spaces, return the length of the last word.
+
+A word is a maximal substring consisting of non-space characters only.
+
+### Examples
+
+| Input | Output | Explanation |
+|---|---|---|
+| `"Hello World"` | `5` | Last word is `"World"`. |
+| `" fly me to the moon "` | `4` | Last word is `"moon"`. |
+| `"luffy is still joyboy"` | `6` | Last word is `"joyboy"`. |
+
+---
+
+## 2. DSA Pattern
+
+**Topic:** Strings
+
+**Pattern:** Reverse Traversal
+
+### Concepts used
+- `String.length()`
+- `String.charAt(index)`
+- `while` loops
+- Boundary checking
+- Counting characters
+- Auxiliary space optimization
+
+### When is this pattern useful?
+
+Reverse traversal is useful when:
+- You need to find the last word or character sequence.
+- The input contains trailing spaces.
+- You need to process a string from the end.
+- You want to avoid creating additional arrays.
+
+---
+
+## 3. Approach 1 — Using split()
+
+### Idea
+
+1. Remove leading and trailing spaces using `trim()`.
+2. Split the string into words.
+3. Access the final word.
+4. Return its length.
+
+### Code
+
+```java
+public int lengthOfLastWord(String s) {
+    String[] s1 = s.trim().split("\\s+");
+    int j = 0;
+
+    for (int i = 0; i < s1.length; i++) {
+        if (i == s1.length - 1) {
+            j = s1[i].length();
+        }
+    }
+
+    return j;
+}
+```
+
+### Complexity
+
+- Time: `O(n)`
+- Auxiliary space: `O(n)`
+
+### Limitations
+
+- Creates an array of words.
+- Requires extra memory.
+- The loop is unnecessary when the last array element can be accessed directly.
+
+This is a useful beginner approach for learning string splitting and arrays.
+
+---
+
+## 4. Approach 2 — Reverse Traversal (Optimal)
+
+### Idea
+
+Instead of splitting the string, start at the last index and move backward.
+
+**Step 1:** Skip trailing spaces.
+
+**Step 2:** Count characters until a space or the beginning of the string is reached.
+
+**Step 3:** Return the count.
+
+### Java Code
+
+```java
+class Solution {
+    public int lengthOfLastWord(String s) {
+        int i = s.length() - 1;
+        int c = 0;
+
+        while (i >= 0 && s.charAt(i) == ' ') {
+            i--;
+        }
+
+        while (i >= 0 && s.charAt(i) != ' ') {
+            c++;
+            i--;
+        }
+
+        return c;
+    }
+}
+```
+
+### Complexity
+
+- **Time:** `O(n)`
+- **Auxiliary space:** `O(1)`
+
+Here, `n` is the length of the input string.
+
+The algorithm uses only two integer variables and does not create an additional string or array.
+
+---
+
+## 5. Dry Run
+
+### Input
+
+```text
+"Hello World   "
+```
+
+The last word is `"World"`, so the expected output is `5`.
+
+### Step 1: Initialize
+
+```java
+int i = s.length() - 1;
+int c = 0;
+```
+
+- `i` points to the last character.
+- `c` stores the length of the last word.
+
+### Step 2: Skip trailing spaces
+
+```java
+while (i >= 0 && s.charAt(i) == ' ') {
+    i--;
+}
+```
+
+The loop moves backward until it reaches `'d'`.
+
+### Step 3: Count the last word
+
+```java
+while (i >= 0 && s.charAt(i) != ' ') {
+    c++;
+    i--;
+}
+```
+
+| Character | Count |
+|---|---:|
+| `d` | 1 |
+| `l` | 2 |
+| `r` | 3 |
+| `o` | 4 |
+| `W` | 5 |
+
+The loop stops when it reaches the space before `"World"`.
+
+### Step 4: Return
+
+```java
+return c;
+```
+
+**Output:** `5`
+
+---
+
+## 6. Understanding the Conditions
+
+### `i >= 0`
+
+Ensures that the index remains valid.
+
+Without this condition, accessing `s.charAt(i)` after `i` becomes `-1` would cause an exception.
+
+### `s.charAt(i) == ' '`
+
+Checks whether the current character is a space.
+
+The first loop uses this condition to skip trailing spaces.
+
+### `s.charAt(i) != ' '`
+
+Checks whether the current character belongs to the last word.
+
+The second loop uses this condition to count the word's characters.
+
+### `i--`
+
+Moves one position to the left.
+
+### `c++`
+
+Increases the word-length counter by one.
+
+---
+
+## 7. Complexity Comparison
+
+| Metric | split() approach | Reverse traversal |
+|---|---|---|
+| Time | `O(n)` | `O(n)` |
+| Auxiliary space | `O(n)` | `O(1)` |
+| Creates an array | Yes | No |
+| Handles trailing spaces | With trimming | Naturally |
+| Recommended | Beginner approach | Optimal approach |
+
+Both have linear worst-case time complexity. Reverse traversal improves auxiliary space usage.
+
+---
+
+## 8. Common Mistakes
+
+- Using `s.length` instead of `s.length()`.
+- Returning the index of the last word instead of its length.
+- Forgetting to skip trailing spaces.
+- Accessing `s.charAt(i)` before checking `i >= 0`.
+- Creating an array when direct traversal is sufficient.
+- Using an incorrect loop condition that skips characters or never executes.
+
+---
+
+## 9. Interview Explanation
+
+"I traverse the string from right to left. First, I skip trailing spaces. Then, I count characters until I encounter a space or reach the beginning of the string. The count gives the length of the last word. This approach takes O(n) time and O(1) auxiliary space."
+
+---
+
+## 10. Revision Checklist
+
+- [ ] Explain why `s.length() - 1` is the last index.
+- [ ] Explain why trailing spaces must be skipped.
+- [ ] Explain the purpose of both `while` loops.
+- [ ] Trace the code for `"Hello World   "`.
+- [ ] Explain why `i >= 0` prevents an invalid index.
+- [ ] State time complexity as `O(n)`.
+- [ ] State auxiliary space as `O(1)`.
+- [ ] Reimplement the solution without referring to the notes.
+
+---
+
+## 11. Key Takeaway
+
+The important optimization is replacing `split()` and an array with reverse traversal.
+
+You do not need to store every word to find the last word's length. Start from the end, skip spaces, count characters, and return the result.
