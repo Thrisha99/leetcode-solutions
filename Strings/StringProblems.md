@@ -586,3 +586,294 @@ Useful techniques:
 1. Boolean array for a fixed character range.
 2. Frequency array when counts matter.
 3. HashSet when tracking distinct elements is the main goal.
+
+
+
+
+
+
+# LeetCode 1704 — Determine if String Halves Are Alike
+
+🔗 **Problem:** [LeetCode 1704](https://leetcode.com/problems/determine-if-string-halves-are-alike/)
+
+## 1. Problem Overview
+
+Given a string `s` of even length, divide it into two equal halves:
+
+- **First half:** The first `n / 2` characters.
+- **Second half:** The remaining `n / 2` characters.
+
+The string is considered alike if both halves contain the same number of vowels.
+
+Vowels are `a`, `e`, `i`, `o`, and `u`, regardless of case.
+
+Return `true` if both halves contain the same number of vowels; otherwise, return `false`.
+
+### Examples
+
+| Input | Output | Explanation |
+|---|---|---|
+| `"book"` | `true` | Both halves contain one vowel. |
+| `"textbook"` | `false` | First half has one vowel; second half has two. |
+| `"MerryChristmas"` | `false` | The two halves have different vowel counts. |
+
+---
+
+## 2. Pattern Identification
+
+**Primary pattern:** String Traversal
+
+**Related concepts:**
+- Character access using `charAt()`
+- Frequency counting
+- Two pointers / paired indexing
+- Boolean conditions
+- Auxiliary space optimization
+
+### When is this pattern useful?
+
+Use this approach when a problem requires you to:
+- Compare two portions of a string.
+- Count particular characters.
+- Compare frequencies between two groups.
+- Process corresponding positions from different sections.
+
+---
+
+## 3. Approach 1 — Two Character Arrays
+
+### Idea
+
+1. Create an array for each half.
+2. Copy characters from the original string into the arrays.
+3. Count the vowels in each array.
+4. Compare the counts.
+
+### Complexity
+
+- Time: `O(n)`
+- Auxiliary space: `O(n)`
+
+### Advantages
+
+- Beginner-friendly.
+- Makes the two halves explicit.
+- Useful for learning indexing and character arrays.
+
+### Disadvantages
+
+- Requires additional memory.
+- Array creation is unnecessary because the original string already provides character access.
+
+**Learning note:** This is a valid starting approach, but it is not space-optimal.
+
+---
+
+## 4. Approach 2 — Two Counters Without Arrays
+
+### Idea
+
+1. Calculate the midpoint.
+2. Access the first half using `s.charAt(i)`.
+3. Access the second half using `s.charAt(i + mid)`.
+4. Count vowels separately.
+5. Compare the two counters.
+
+### Complexity
+
+- Time: `O(n)`
+- Auxiliary space: `O(1)`
+
+### Advantages
+
+- Removes both character arrays.
+- Keeps the original two-counter logic.
+- Uses constant auxiliary space.
+
+### Why is this better than Approach 1?
+
+The algorithm performs the same essential counting work but avoids allocating arrays proportional to the input length.
+
+---
+
+## 5. Approach 3 — Single Counter (Recommended)
+
+### Idea
+
+Instead of counting each half independently, maintain one balance counter.
+
+- Vowel in the first half: `count++`
+- Vowel in the second half: `count--`
+- Non-vowel: No change
+
+At the end:
+
+- `count == 0` means both halves contain equal numbers of vowels.
+- `count != 0` means their vowel counts differ.
+
+### Java Code
+
+```java
+class Solution {
+    public boolean halvesAreAlike(String s) {
+        int mid = s.length() / 2;
+        int count = 0;
+
+        for (int i = 0; i < mid; i++) {
+            char left = Character.toLowerCase(s.charAt(i));
+            char right = Character.toLowerCase(s.charAt(i + mid));
+
+            if (isVowel(left)) {
+                count++;
+            }
+
+            if (isVowel(right)) {
+                count--;
+            }
+        }
+
+        return count == 0;
+    }
+
+    private boolean isVowel(char ch) {
+        ch = Character.toLowerCase(ch);
+
+        return ch == 'a' || ch == 'e' || ch == 'i'
+                || ch == 'o' || ch == 'u';
+    }
+}
+```
+
+### Complexity
+
+- **Time:** `O(n)`
+- **Auxiliary space:** `O(1)`
+
+Here, `n` is the length of the string.
+
+### Why is this optimal?
+
+In the worst case, every character must be inspected to determine the vowel counts. This solution achieves linear time and constant auxiliary space.
+
+It also avoids creating a lowercase copy of the original string.
+
+---
+
+## 6. Dry Run — Input `"book"`
+
+The midpoint is `4 / 2 = 2`.
+
+The first half is `"bo"`.
+The second half is `"ok"`.
+
+| Iteration | Left character | Right character | Count after processing |
+|---|---|---|---:|
+| `i = 0` | `b` — not a vowel | `o` — vowel | `-1` |
+| `i = 1` | `o` — vowel | `k` — not a vowel | `0` |
+
+Final count: `0`
+
+**Output:** `true`
+
+Both halves contain one vowel.
+
+---
+
+## 7. Important Java Concepts
+
+### `String.length()`
+
+Returns the number of characters in the string.
+
+```java
+int mid = s.length() / 2;
+```
+
+### `String.charAt(index)`
+
+Returns the character at a particular index.
+
+```java
+char ch = s.charAt(i);
+```
+
+### `Character.toLowerCase(ch)`
+
+Converts an uppercase character to lowercase.
+
+```java
+char ch = Character.toLowerCase(s.charAt(i));
+```
+
+This avoids creating an entirely new lowercase string.
+
+### Helper method
+
+```java
+private boolean isVowel(char ch)
+```
+
+A helper method avoids repeating the same vowel-checking condition.
+
+### Comparing counts
+
+```java
+return count == 0;
+```
+
+This directly returns a boolean, so a separate `if-else` statement is unnecessary.
+
+---
+
+## 8. Common Mistakes
+
+- Using `=` instead of `==` in comparisons.
+- Writing `'0'` instead of `'o'`.
+- Processing only part of the first half because of an incorrect loop boundary.
+- Using a string index directly as an array index for the second half.
+- Using a loop condition that is always false.
+- Forgetting uppercase vowels.
+- Creating arrays when direct character access is sufficient.
+- Claiming `O(1)` auxiliary space while creating a lowercase copy of the string.
+
+---
+
+## 9. Complexity Comparison
+
+| Approach | Time | Auxiliary Space |
+|---|---|---|
+| Two character arrays | `O(n)` | `O(n)` |
+| Two counters | `O(n)` | `O(1)` |
+| Single counter | `O(n)` | `O(1)` |
+
+The two-counter and single-counter approaches are both optimal in asymptotic time and auxiliary space.
+
+The single-counter approach is a compact implementation, not a better asymptotic complexity class.
+
+---
+
+## 10. Interview Explanation
+
+"I divide the string into two equal halves and traverse corresponding positions in both halves. I increment a counter for vowels in the first half and decrement it for vowels in the second half. If the final counter is zero, both halves have the same number of vowels. This solution takes O(n) time and O(1) auxiliary space."
+
+---
+
+## 11. Revision Checklist
+
+- [ ] Explain why two arrays are unnecessary.
+- [ ] Calculate the midpoint correctly.
+- [ ] Access the second half using `i + mid`.
+- [ ] Handle uppercase vowels.
+- [ ] Explain the single-counter technique.
+- [ ] State time and auxiliary space complexity.
+- [ ] Implement the optimal solution without looking at the notes.
+
+---
+
+## 12. Key Takeaway
+
+Start with a straightforward solution, verify correctness, and then optimize.
+
+For this problem, the key improvement is moving from storing both halves in arrays to accessing the original string directly. A single counter then tracks the difference between the two vowel counts.
+
+**Recommended revision:** Reimplement the single-counter approach from memory and explain why `count == 0` is sufficient.
