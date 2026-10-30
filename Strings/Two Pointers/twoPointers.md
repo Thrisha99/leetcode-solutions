@@ -604,3 +604,466 @@ This problem combines several important String DSA concepts:
 5. Read/write pointers for in-place array compaction.
 
 **Most important learning:** Reversing the entire array and then reversing individual words is a powerful technique. Combining it with read/write pointers allows you to handle extra spaces without separate splitting or regex operations.
+
+
+
+# 125. Valid Palindrome
+
+**LeetCode:** https://leetcode.com/problems/valid-palindrome/
+
+**Difficulty:** Easy
+
+**Topic:** Strings
+
+**Pattern:** Two Pointers – Opposite Direction
+
+**Language:** Java
+
+---
+
+## 1. Problem Description
+
+Given a string `s`, determine whether it is a palindrome.
+
+A palindrome is a string that reads the same forward and backward.
+
+For this problem:
+
+- Ignore uppercase and lowercase differences.
+- Consider only alphanumeric characters (letters and digits).
+- Ignore spaces and punctuation.
+
+Return `true` if the string is a palindrome; otherwise, return `false`.
+
+### Examples
+
+**Example 1**
+
+Input:
+```text
+"A man, a plan, a canal: Panama"
+```
+
+Output:
+```text
+true
+```
+
+Explanation:
+
+After removing spaces and punctuation and ignoring case:
+
+`amanaplanacanalpanama`
+
+It reads the same forward and backward.
+
+**Example 2**
+
+Input:
+```text
+"race a car"
+```
+
+Output:
+```text
+false
+```
+
+Explanation:
+
+After removing spaces:
+
+`raceacar`
+
+It does not read the same forward and backward.
+
+**Example 3**
+
+Input:
+```text
+" "
+```
+
+Output:
+```text
+true
+```
+
+Explanation:
+
+There are no alphanumeric characters to compare.
+An empty cleaned string is considered a palindrome.
+
+---
+
+## 2. Important Concepts
+
+### A. Palindrome
+
+A palindrome is a sequence that remains the same when reversed.
+
+Examples:
+
+- madam
+- racecar
+- level
+- 121
+
+### B. Alphanumeric Characters
+
+Alphanumeric characters include:
+
+- A-Z
+- a-z
+- 0-9
+
+Java method:
+
+`Character.isLetterOrDigit(ch)`
+
+Returns:
+- `true` if the character is a letter or digit.
+- `false` otherwise.
+
+### C. Case Conversion
+
+Java method:
+
+`Character.toLowerCase(ch)`
+
+Converts an individual character to lowercase.
+
+### D. Two Pointers
+
+Two pointers start at opposite ends of the string:
+
+- `i` starts at index 0.
+- `j` starts at the last index.
+
+Move both pointers toward the center after comparing valid characters.
+
+---
+
+## 3. Approach 1: Brute Force
+
+### Idea
+
+1. Convert the string to lowercase.
+2. Remove all non-alphanumeric characters.
+3. Reverse the cleaned string.
+4. Compare the cleaned string with its reversed version.
+5. If both are equal, return true.
+
+### Code
+
+```java
+class Solution {
+    public boolean isPalindrome(String s) {
+
+        s = s.toLowerCase();
+
+        StringBuilder cleaned = new StringBuilder();
+
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+
+            if (Character.isLetterOrDigit(ch)) {
+                cleaned.append(ch);
+            }
+        }
+
+        String original = cleaned.toString();
+        String reversed = cleaned.reverse().toString();
+
+        return original.equals(reversed);
+    }
+}
+```
+
+### Dry Run
+
+Input:
+
+`"A man, a plan, a canal: Panama"`
+
+Step 1: Convert to lowercase.
+
+`"a man, a plan, a canal: panama"`
+
+Step 2: Remove spaces and punctuation.
+
+`"amanaplanacanalpanama"`
+
+Step 3: Reverse the cleaned string.
+
+`"amanaplanacanalpanama"`
+
+Step 4: Compare.
+
+Original = Reversed
+
+Therefore, return `true`.
+
+### Complexity Analysis
+
+- Time Complexity: O(n)
+- Auxiliary Space: O(n)
+
+Why?
+
+- Traversing the input takes O(n).
+- Creating the cleaned string takes O(n) space.
+- Reversing and comparing take O(n) time.
+
+---
+
+## 4. Approach 2: Two Pointers
+
+### Idea
+
+Instead of creating another cleaned string, compare characters directly from both ends.
+
+1. Initialize `i = 0`.
+2. Initialize `j = s.length() - 1`.
+3. Skip non-alphanumeric characters.
+4. Compare the left and right characters.
+5. If they differ, return false.
+6. If they match, move both pointers inward.
+7. If all comparisons succeed, return true.
+
+### Code
+
+```java
+class Solution {
+    public boolean isPalindrome(String s) {
+
+        s = s.toLowerCase();
+
+        int i = 0;
+        int j = s.length() - 1;
+
+        while (i < j) {
+
+            if (!Character.isLetterOrDigit(s.charAt(i))) {
+                i++;
+                continue;
+            }
+
+            if (!Character.isLetterOrDigit(s.charAt(j))) {
+                j--;
+                continue;
+            }
+
+            if (s.charAt(i) != s.charAt(j)) {
+                return false;
+            }
+
+            i++;
+            j--;
+        }
+
+        return true;
+    }
+}
+```
+
+### Dry Run
+
+Input:
+
+`"A man, a plan, a canal: Panama"`
+
+After lowercase conversion:
+
+`"a man, a plan, a canal: panama"`
+
+| Iteration | Left character | Right character | Action |
+|---|---|---|---|
+| 1 | a | a | Match |
+| 2 | m | m | Match |
+| 3 | a | a | Match |
+| 4 | n | n | Match |
+| 5 | a | a | Match |
+| 6 | p | p | Match |
+| 7 | l | l | Match |
+| 8 | a | a | Match |
+| 9 | n | n | Match |
+
+Spaces and punctuation are skipped.
+
+All valid character pairs match.
+
+Output: `true`
+
+### Complexity Analysis
+
+- Time Complexity: O(n)
+- Auxiliary Space: O(n)
+
+Why is auxiliary space O(n)?
+
+Because:
+
+`s = s.toLowerCase();`
+
+creates a new lowercase String.
+
+The two-pointer traversal itself uses O(1) extra space.
+
+---
+
+## 5. Approach 3: Optimized Two Pointers
+
+### Idea
+
+This is the most space-efficient approach.
+
+Instead of converting the entire string to lowercase, convert only the two characters being compared.
+
+Use:
+
+`Character.toLowerCase(s.charAt(i))`
+
+and
+
+`Character.toLowerCase(s.charAt(j))`
+
+This avoids creating a separate lowercase String.
+
+### Code
+
+```java
+class Solution {
+    public boolean isPalindrome(String s) {
+
+        int i = 0;
+        int j = s.length() - 1;
+
+        while (i < j) {
+
+            if (!Character.isLetterOrDigit(s.charAt(i))) {
+                i++;
+                continue;
+            }
+
+            if (!Character.isLetterOrDigit(s.charAt(j))) {
+                j--;
+                continue;
+            }
+
+            char left = Character.toLowerCase(s.charAt(i));
+            char right = Character.toLowerCase(s.charAt(j));
+
+            if (left != right) {
+                return false;
+            }
+
+            i++;
+            j--;
+        }
+
+        return true;
+    }
+}
+```
+
+### Complexity Analysis
+
+- Time Complexity: O(n)
+- Auxiliary Space: O(1)
+
+Why?
+
+- Each pointer moves through the string at most once.
+- No additional string, array, or collection is created.
+- Only a fixed number of variables are used.
+
+---
+
+## 6. Approach Comparison
+
+| Approach | Time | Auxiliary Space |
+|---|---|---|
+| Brute Force | O(n) | O(n) |
+| Two Pointers with toLowerCase() | O(n) | O(n) |
+| Optimized Two Pointers | O(n) | O(1) |
+
+**Best approach:** Optimized Two Pointers.
+
+It achieves linear time complexity and constant auxiliary space.
+
+---
+
+## 7. Common Mistakes
+
+1. Initializing `j = s.length()` instead of `s.length() - 1`.
+2. Forgetting to skip spaces and punctuation.
+3. Comparing characters without handling uppercase and lowercase.
+4. Returning true immediately after finding one matching pair.
+5. Forgetting to return false when a mismatch occurs.
+6. Returning false after the loop instead of true.
+7. Using `while` instead of `if` for a single character comparison.
+8. Forgetting that `toLowerCase()` creates a new String.
+
+---
+
+## 8. Important Java Methods
+
+| Method | Purpose |
+|---|---|
+| `s.length()` | Returns string length |
+| `s.charAt(i)` | Returns character at index i |
+| `Character.isLetterOrDigit(ch)` | Checks whether a character is alphanumeric |
+| `Character.toLowerCase(ch)` | Converts a character to lowercase |
+| `s.toLowerCase()` | Converts the entire string to lowercase |
+| `StringBuilder.reverse()` | Reverses a StringBuilder |
+| `String.equals()` | Compares string contents |
+
+---
+
+## 9. Interview Explanation
+
+"I use the two-pointer technique to check whether the given string is a palindrome.
+
+I initialize one pointer at the beginning and another at the end.
+
+I skip all non-alphanumeric characters and compare the remaining characters without considering case.
+
+If any pair does not match, I immediately return false.
+
+Otherwise, I move both pointers toward the center.
+
+If all valid character pairs match, I return true.
+
+The optimized solution takes O(n) time and O(1) auxiliary space."
+
+---
+
+## 10. Revision Checklist
+
+- [ ] Understand palindrome logic.
+- [ ] Understand alphanumeric characters.
+- [ ] Understand `Character.isLetterOrDigit()`.
+- [ ] Understand `Character.toLowerCase()`.
+- [ ] Understand opposite-direction two pointers.
+- [ ] Solve using brute force.
+- [ ] Solve using two pointers.
+- [ ] Explain why the optimized solution uses O(1) auxiliary space.
+- [ ] Explain the solution in an interview.
+
+---
+
+## 11. Key Takeaway
+
+**Pattern:** Two Pointers – Opposite Direction
+
+**Core logic:**
+
+Compare the first and last valid characters, then move both pointers toward the center.
+
+**Remember:**
+
+If any valid pair does not match, return false immediately.
+
+If all pairs match, return true.
+```
