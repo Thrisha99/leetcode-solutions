@@ -2088,3 +2088,1030 @@ If your current branch is not main, replace `main` with your actual branch name.
 | Interview Explanation | Covered |
 
 **Key takeaway:** When a problem asks for the first, earliest, or leftmost unique element, frequency counting followed by a second traversal of the original input is a useful pattern.
+
+
+
+# LeetCode 205 – Isomorphic Strings
+
+## 1. Problem Information
+
+| Property | Details |
+|---|---|
+| LeetCode Number | 205 |
+| Problem Name | Isomorphic Strings |
+| Link | https://leetcode.com/problems/isomorphic-strings/ |
+| Difficulty | Easy |
+| Language | Java |
+| Topic | Strings, Hashing |
+| Pattern | Two-way Character Mapping |
+
+### Problem Statement
+
+Given two strings s and t, determine whether they are isomorphic.
+
+Two strings are isomorphic if the characters in s can be replaced to get t.
+
+Every occurrence of a character must be replaced with the same character.
+
+Two different characters cannot map to the same character.
+
+### Examples
+
+**Example 1**
+
+Input:
+```text
+s = "egg"
+t = "add"
+```
+
+Output:
+```text
+true
+```
+
+Explanation:
+- e maps to a.
+- g maps to d.
+- The mapping is consistent.
+
+**Example 2**
+
+Input:
+```text
+s = "foo"
+t = "bar"
+```
+
+Output:
+```text
+false
+```
+
+Explanation:
+- f maps to b.
+- Both occurrences of o would need to map to the same character.
+- However, the target characters are a and r.
+- The mapping is inconsistent.
+
+**Example 3**
+
+Input:
+```text
+s = "paper"
+t = "title"
+```
+
+Output:
+```text
+true
+```
+
+Explanation:
+
+| Source | Target |
+|---|---|
+| p | t |
+| a | i |
+| p | t |
+| e | l |
+| r | e |
+
+The mapping is consistent and one-to-one.
+
+---
+
+## 2. Important Constraints
+
+- Both strings must have equal lengths.
+- Character mappings must remain consistent.
+- One source character cannot map to multiple target characters.
+- Multiple source characters cannot map to the same target character.
+- The problem supports ASCII characters.
+
+## 3. Prerequisites
+
+1. Java Strings and charAt().
+2. Character comparison.
+3. HashMap and containsKey().
+4. HashMap put() and get().
+5. Arrays and character indexing.
+6. One-to-one mapping.
+7. Time and auxiliary space complexity.
+
+---
+
+# 4. DSA Pattern – Two-way Character Mapping
+
+### Core Idea
+
+We need to establish a one-to-one relationship between characters of two strings.
+
+There are two rules:
+
+**Rule 1: Source to Target**
+
+One character in s must always map to the same character in t.
+
+Example:
+
+```text
+s = "egg"
+t = "add"
+
+e -> a
+g -> d
+```
+
+This is valid.
+
+But:
+
+```text
+s = "foo"
+t = "bar"
+
+o -> a
+o -> r
+```
+
+This is invalid because the same source character maps to two different target characters.
+
+**Rule 2: Target to Source**
+
+Two different source characters cannot map to the same target character.
+
+Example:
+
+```text
+s = "ab"
+t = "cc"
+```
+
+Mapping:
+
+```text
+a -> c
+b -> c
+```
+
+This is invalid because two different characters map to the same target character.
+
+### Mapping Diagram
+
+```text
+             Source (s)
+                 |
+                 v
+           Target (t)
+                 |
+                 v
+        Check source mapping
+                 |
+                 v
+        Check target mapping
+                 |
+                 v
+       Both mappings consistent?
+             /       \
+           Yes        No
+            |          |
+            v          v
+         Continue    Return false
+            |
+            v
+      All characters processed
+            |
+            v
+        Return true
+```
+
+---
+
+# 5. Approach 1 – Brute Force
+
+### Concept
+
+Compare every character with all previously visited characters.
+
+Instead of maintaining a mapping data structure, use nested loops to verify that previous character relationships are consistent.
+
+### Algorithm
+
+1. Check whether both strings have equal lengths.
+2. Traverse the strings using index i.
+3. Compare the current positions with all previous positions j.
+4. If s[i] equals s[j], then t[i] must equal t[j].
+5. If t[i] equals t[j], then s[i] must equal s[j].
+6. If either condition fails, return false.
+7. If all comparisons pass, return true.
+
+### Dry Run
+
+Input:
+
+```text
+s = "egg"
+t = "add"
+```
+
+**Iteration 1: i = 0**
+
+```text
+s[0] = e
+t[0] = a
+```
+
+No previous characters exist.
+
+Continue.
+
+**Iteration 2: i = 1**
+
+```text
+s[1] = g
+t[1] = d
+```
+
+Compare with j = 0:
+
+```text
+s[1] == s[0]?
+g == e -> false
+
+t[1] == t[0]?
+d == a -> false
+```
+
+No conflict.
+
+Continue.
+
+**Iteration 3: i = 2**
+
+```text
+s[2] = g
+t[2] = d
+```
+
+Compare with j = 0:
+
+```text
+g == e -> false
+d == a -> false
+```
+
+Compare with j = 1:
+
+```text
+g == g -> true
+d == d -> true
+```
+
+The mapping is consistent.
+
+Output:
+
+```text
+true
+```
+
+### Invalid Case
+
+Input:
+
+```text
+s = "ab"
+t = "cc"
+```
+
+At i = 1, j = 0:
+
+```text
+s[1] == s[0]?
+b == a -> false
+
+t[1] == t[0]?
+c == c -> true
+```
+
+The same target character is being assigned to two different source characters.
+
+Return:
+
+```text
+false
+```
+
+### Complexity Analysis
+
+| Complexity | Value | Reason |
+|---|---|---|
+| Time | O(n²) | Nested loops compare previous positions |
+| Auxiliary Space | O(1) | No additional data structure |
+
+### Limitation
+
+Repeated comparisons make the approach inefficient for long strings.
+
+We can improve this by maintaining character mappings.
+
+---
+
+# 6. Approach 2 – Better: Two HashMaps
+
+### Concept
+
+Use two HashMaps to maintain mappings in both directions.
+
+Map 1:
+
+```text
+Source character -> Target character
+```
+
+Map 2:
+
+```text
+Target character -> Source character
+```
+
+Why two maps?
+
+Because checking only one direction is insufficient to guarantee a one-to-one relationship.
+
+### Algorithm
+
+1. Check whether string lengths are equal.
+2. Create two HashMaps.
+3. Traverse both strings simultaneously.
+4. Extract the current characters c1 and c2.
+5. Check whether c1 is already mapped.
+6. If mapped to a different character, return false.
+7. Check whether c2 is already mapped.
+8. If mapped to a different source character, return false.
+9. Store both mappings.
+10. Return true after processing all characters.
+
+### Important Java Methods
+
+**containsKey()**
+
+```java
+map.containsKey(c1)
+```
+
+Checks whether a character already has a mapping.
+
+**get()**
+
+```java
+map.get(c1)
+```
+
+Retrieves the character currently mapped to c1.
+
+**put()**
+
+```java
+map.put(c1, c2)
+```
+
+Stores a character mapping.
+
+### Dry Run
+
+Input:
+
+```text
+s = "paper"
+t = "title"
+```
+
+Initially:
+
+```text
+map1 = {}
+map2 = {}
+```
+
+| i | c1 | c2 | Source mapping | Target mapping | Result |
+|---:|:---:|:---:|---|---|---|
+| 0 | p | t | p → t | t → p | Store |
+| 1 | a | i | a → i | i → a | Store |
+| 2 | p | t | Existing p → t | Existing t → p | Valid |
+| 3 | e | l | e → l | l → e | Store |
+| 4 | r | e | r → e | e → r | Store |
+
+No conflicts are found.
+
+Output:
+
+```text
+true
+```
+
+### Failure Case
+
+Input:
+
+```text
+s = "ab"
+t = "cc"
+```
+
+At i = 0:
+
+```text
+map1 = {a -> c}
+map2 = {c -> a}
+```
+
+At i = 1:
+
+```text
+c1 = b
+c2 = c
+```
+
+Check map1:
+
+```text
+b is not mapped.
+```
+
+Check map2:
+
+```text
+c is already mapped to a.
+```
+
+But the current source character is b.
+
+The mapping is inconsistent.
+
+Return:
+
+```text
+false
+```
+
+### Complexity Analysis
+
+| Complexity | Value |
+|---|---|
+| Time | O(n) average |
+| Auxiliary Space | O(k) |
+
+k represents the number of distinct characters stored in the maps.
+
+### Limitation
+
+HashMaps are flexible but have additional data structure overhead.
+
+Since the problem uses ASCII characters, fixed-size arrays can represent the mappings directly.
+
+---
+
+# 7. Approach 3 – Optimal: Two Mapping Arrays
+
+### Concept
+
+Use two integer arrays instead of two HashMaps.
+
+For ASCII characters, each array has 128 positions.
+
+```java
+int[] arr1 = new int[128];
+int[] arr2 = new int[128];
+```
+
+Each character's ASCII value becomes its array index.
+
+### Array Responsibilities
+
+**arr1 – Source to Target**
+
+```text
+arr1[c1] = c2
+```
+
+Stores which target character is mapped to the source character.
+
+**arr2 – Target to Source**
+
+```text
+arr2[c2] = c1
+```
+
+Stores which source character is mapped to the target character.
+
+### Why Do We Need Two Arrays?
+
+Consider:
+
+```text
+s = "ab"
+t = "cc"
+```
+
+If we maintain only source-to-target mapping:
+
+```text
+a -> c
+b -> c
+```
+
+Both mappings might appear valid.
+
+But the reverse mapping reveals the conflict:
+
+```text
+c -> a
+c -> b
+```
+
+The same target character cannot map back to two different source characters.
+
+Therefore, both arrays are necessary.
+
+### Sentinel Value
+
+In the improved implementation:
+
+```java
+Arrays.fill(arr1, -1);
+Arrays.fill(arr2, -1);
+```
+
+- `-1` means the character has not been mapped.
+- Any non-negative value represents an existing ASCII character mapping.
+
+This avoids confusing an unmapped character with ASCII character code 0.
+
+### Algorithm
+
+1. Check whether string lengths are equal.
+2. Create two arrays of size 128.
+3. Initialize both arrays with -1.
+4. Traverse both strings simultaneously.
+5. Extract c1 and c2.
+6. Check whether c1 already has a different target mapping.
+7. Check whether c2 already has a different source mapping.
+8. If either condition fails, return false.
+9. Store both mappings.
+10. Return true if the loop completes.
+
+### Detailed Dry Run 1 – Valid Mapping
+
+Input:
+
+```text
+s = "egg"
+t = "add"
+```
+
+Initially:
+
+```text
+arr1 = all -1
+arr2 = all -1
+```
+
+**Iteration 1**
+
+```text
+i = 0
+
+c1 = 'e'
+c2 = 'a'
+```
+
+ASCII values:
+
+```text
+'e' = 101
+'a' = 97
+```
+
+Check source mapping:
+
+```text
+arr1[101] = -1
+```
+
+Character e is not mapped yet.
+
+Check target mapping:
+
+```text
+arr2[97] = -1
+```
+
+Character a is not mapped yet.
+
+Store:
+
+```text
+arr1[101] = 97
+arr2[97] = 101
+```
+
+Mapping:
+
+```text
+e -> a
+```
+
+**Iteration 2**
+
+```text
+i = 1
+
+c1 = 'g'
+c2 = 'd'
+```
+
+ASCII values:
+
+```text
+'g' = 103
+'d' = 100
+```
+
+Check:
+
+```text
+arr1[103] = -1
+arr2[100] = -1
+```
+
+No previous mapping exists.
+
+Store:
+
+```text
+arr1[103] = 100
+arr2[100] = 103
+```
+
+Mapping:
+
+```text
+g -> d
+```
+
+**Iteration 3**
+
+```text
+i = 2
+
+c1 = 'g'
+c2 = 'd'
+```
+
+Check source mapping:
+
+```text
+arr1[103] = 100
+
+Does 100 != 100?
+No.
+```
+
+Check target mapping:
+
+```text
+arr2[100] = 103
+
+Does 103 != 103?
+No.
+```
+
+Both mappings are consistent.
+
+Store the same mappings again.
+
+The loop completes.
+
+Output:
+
+```text
+true
+```
+
+### Detailed Dry Run 2 – Invalid Mapping
+
+Input:
+
+```text
+s = "foo"
+t = "bar"
+```
+
+**Iteration 1**
+
+```text
+f -> b
+```
+
+Store:
+
+```text
+arr1['f'] = 'b'
+arr2['b'] = 'f'
+```
+
+**Iteration 2**
+
+```text
+o -> a
+```
+
+Store:
+
+```text
+arr1['o'] = 'a'
+arr2['a'] = 'o'
+```
+
+**Iteration 3**
+
+```text
+o -> r
+```
+
+Check source mapping:
+
+```text
+arr1['o'] = 'a'
+```
+
+Current target:
+
+```text
+'r'
+```
+
+Compare:
+
+```text
+'a' != 'r'
+```
+
+The same source character o is being mapped to two different target characters.
+
+Return:
+
+```text
+false
+```
+
+### Detailed Dry Run 3 – Reverse Mapping Failure
+
+Input:
+
+```text
+s = "ab"
+t = "cc"
+```
+
+**Iteration 1**
+
+```text
+a -> c
+```
+
+Store:
+
+```text
+arr1['a'] = 'c'
+arr2['c'] = 'a'
+```
+
+**Iteration 2**
+
+```text
+b -> c
+```
+
+Source mapping check:
+
+```text
+arr1['b'] = -1
+```
+
+No conflict in the first direction.
+
+Target mapping check:
+
+```text
+arr2['c'] = 'a'
+```
+
+Current source:
+
+```text
+'b'
+```
+
+Compare:
+
+```text
+'a' != 'b'
+```
+
+The reverse mapping is inconsistent.
+
+Return:
+
+```text
+false
+```
+
+### Complexity Analysis
+
+| Complexity | Value | Reason |
+|---|---|---|
+| Time | O(n) | One traversal of both strings |
+| Auxiliary Space | O(1) | Two fixed arrays of 128 integers |
+
+This is the optimal approach for the ASCII constraint.
+
+---
+
+# 8. Approach Comparison
+
+| Feature | Brute Force | HashMap | Mapping Arrays |
+|---|---|---|---|
+| Technique | Previous-position checking | Two HashMaps | Two arrays |
+| Time | O(n²) | O(n) average | O(n) |
+| Auxiliary Space | O(1) | O(k) | O(1) |
+| One-to-one mapping | Yes | Yes | Yes |
+| Best use | Understanding mapping rules | Flexible character sets | ASCII input |
+
+**Final selection:** Two Mapping Arrays.
+
+Reason: The ASCII character set has a fixed size, so direct array indexing provides O(1) lookup and fixed auxiliary space.
+
+---
+
+# 9. Important Concepts Learned
+
+### 1. Isomorphic Strings
+
+Two strings are isomorphic when their characters have a consistent one-to-one mapping.
+
+### 2. Source-to-Target Mapping
+
+```java
+arr1[c1] = c2;
+```
+
+One source character must always map to the same target character.
+
+### 3. Target-to-Source Mapping
+
+```java
+arr2[c2] = c1;
+```
+
+One target character cannot be assigned to two different source characters.
+
+### 4. Consistency Checking
+
+```java
+if (arr1[c1] != -1 && arr1[c1] != c2)
+```
+
+Checks whether an existing mapping conflicts with the current mapping.
+
+### 5. Reverse Consistency Checking
+
+```java
+if (arr2[c2] != -1 && arr2[c2] != c1)
+```
+
+Prevents multiple source characters from mapping to the same target character.
+
+### 6. Character as Array Index
+
+Java stores characters as numeric character values.
+
+For ASCII:
+
+```java
+arr1[c1]
+```
+
+uses the character's numeric value as the array index.
+
+### 7. Sentinel Values
+
+`-1` represents an unmapped character.
+
+Using a sentinel that cannot represent a valid character avoids ambiguity.
+
+---
+
+# 10. Common Mistakes
+
+| Mistake | Why incorrect | Correct understanding |
+|---|---|---|
+| Using only one mapping array | Does not prevent reverse conflicts | Use two mappings |
+| Checking only source mapping | Multiple source characters may map to one target | Check both directions |
+| Not checking string lengths | Different lengths cannot be isomorphic | Return false first |
+| Overwriting mappings without validation | Can break consistency | Validate before updating |
+| Using character values as mapping values without understanding them | Confuses characters and array indexes | Character values are numeric codes |
+| Using 0 as an unmapped marker without considering ASCII 0 | Ambiguous sentinel | Initialize with -1 |
+
+---
+
+# 11. Edge Cases
+
+| Input s | Input t | Expected | Reason |
+|---|---|---|---|
+| `"egg"` | `"add"` | true | Consistent mapping |
+| `"foo"` | `"bar"` | false | One source maps to multiple targets |
+| `"paper"` | `"title"` | true | One-to-one mapping |
+| `"ab"` | `"cc"` | false | Two sources map to one target |
+| `"a"` | `"a"` | true | Single character mapping |
+| `"ab"` | `"ba"` | true | Valid reverse mapping |
+| `"aa"` | `"bb"` | true | Repeated characters map consistently |
+| `"ab"` | `"a"` | false | Different lengths |
+
+---
+
+# 12. Interview Explanation
+
+"I solve this problem using two-way character mapping.
+
+First, I check whether both strings have equal lengths.
+
+Then I maintain two mappings. The first stores source-to-target relationships, and the second stores target-to-source relationships.
+
+For each pair of characters, I check whether an existing mapping conflicts with the current pair.
+
+If either direction is inconsistent, I return false.
+
+Otherwise, I update both mappings and continue.
+
+If every character pair is processed successfully, I return true.
+
+The time complexity is O(n), and auxiliary space complexity is O(1) because both mapping arrays have a fixed size of 128 for ASCII characters."
+
+---
+
+# 13. Revision Checklist
+
+- [ ] Understand what isomorphic strings mean.
+- [ ] Understand one-to-one mapping.
+- [ ] Implement brute force using previous-position comparisons.
+- [ ] Understand why one HashMap is insufficient.
+- [ ] Understand why two HashMaps are required.
+- [ ] Understand source-to-target mapping.
+- [ ] Understand target-to-source mapping.
+- [ ] Understand array indexing using ASCII values.
+- [ ] Understand sentinel value -1.
+- [ ] Dry-run `"egg"` and `"add"`.
+- [ ] Dry-run `"foo"` and `"bar"`.
+- [ ] Dry-run `"ab"` and `"cc"`.
+- [ ] Explain O(n) time complexity.
+- [ ] Explain O(1) auxiliary space.
+- [ ] Solve independently without notes.
+
+---
+
+# 14. GitHub Commands
+
+Run these commands from your repository root:
+
+```bash
+git add Strings/0205-Isomorphic-Strings.java Strings/0205-Isomorphic-Strings.md
+
+git commit -m "Add LC 205 Isomorphic Strings solutions and notes"
+
+git push origin main
+```
+
+If your current branch is not main, replace `main` with your actual branch name.
+
+---
+
+# 15. Final Learning Summary
+
+| Item | Status |
+|---|---|
+| Brute Force | Documented |
+| Better – Two HashMaps | Documented |
+| Optimal – Two Mapping Arrays | Documented |
+| Your HashMap approach | Included |
+| Your Array approach | Included and improved sentinel |
+| Detailed Dry Runs | 3 examples |
+| Complexity Comparison | Completed |
+| Edge Cases | Covered |
+| Interview Explanation | Covered |
+
+**Key takeaway:** Whenever a problem requires a one-to-one relationship between two sets of characters, think about maintaining mappings in both directions.
+
+**Important submission note:** Submit only one `class Solution` containing the optimal implementation to LeetCode. Keep the three differently named classes in your GitHub learning file.
