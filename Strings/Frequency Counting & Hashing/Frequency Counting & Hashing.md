@@ -3115,3 +3115,615 @@ If your current branch is not main, replace `main` with your actual branch name.
 **Key takeaway:** Whenever a problem requires a one-to-one relationship between two sets of characters, think about maintaining mappings in both directions.
 
 **Important submission note:** Submit only one `class Solution` containing the optimal implementation to LeetCode. Keep the three differently named classes in your GitHub learning file.
+
+
+
+# LeetCode 49 - Group Anagrams
+
+## Problem Information
+
+- **Problem:** Group Anagrams
+- **LeetCode Number:** 49
+- **Link:** https://leetcode.com/problems/group-anagrams/
+- **Difficulty:** Medium
+- **Topic:** Strings, Hashing
+- **Pattern:** Frequency Counting + HashMap
+- **Language:** Java
+
+---
+
+## 1. Problem Statement
+
+Given an array of strings, group the anagrams together.
+
+Anagrams are words that contain the same characters with the same frequencies, but possibly in different orders.
+
+### Example 1
+
+Input:
+```java
+strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+```
+
+Output:
+```java
+[
+    ["eat", "tea", "ate"],
+    ["tan", "nat"],
+    ["bat"]
+]
+```
+
+### Example 2
+
+Input:
+```java
+strs = [""]
+```
+
+Output:
+```java
+[[""]]
+```
+
+### Example 3
+
+Input:
+```java
+strs = ["a"]
+```
+
+Output:
+```java
+[["a"]]
+```
+
+---
+
+## 2. Core Concept
+
+Two strings are anagrams if their character frequencies are identical.
+
+For example:
+
+| Character | eat | tea | tan |
+|---|---:|---:|---:|
+| a | 1 | 1 | 1 |
+| e | 1 | 1 | 0 |
+| t | 1 | 1 | 1 |
+| n | 0 | 0 | 1 |
+
+Therefore:
+- eat and tea have identical frequency patterns.
+- tan has a different frequency pattern.
+
+We use this frequency pattern as a HashMap key.
+
+---
+
+## 3. Data Structures Used
+
+### A. HashMap<String, List<String>>
+
+```java
+HashMap<String, List<String>> map = new HashMap<>();
+```
+
+Key:
+- String containing the character-frequency signature.
+
+Value:
+- List<String> containing words with that signature.
+
+Example:
+
+```java
+map = {
+    "1#0#...#1#" : ["eat", "tea", "ate"],
+    "1#0#...#1#" : ["tan", "nat"]
+};
+```
+
+The above is conceptual notation: each actual key is a distinct frequency signature.
+
+### B. int[26] Frequency Array
+
+```java
+int[] freq = new int[26];
+```
+
+| Index | Character |
+|---:|---|
+| 0 | a |
+| 1 | b |
+| 2 | c |
+| ... | ... |
+| 25 | z |
+
+Character-to-index conversion:
+
+```java
+int index = word.charAt(j) - 'a';
+freq[index]++;
+```
+
+### C. StringBuilder
+
+```java
+StringBuilder sb = new StringBuilder();
+```
+
+Used to build the frequency signature efficiently.
+
+### D. String Key
+
+```java
+String key = sb.toString();
+```
+
+Converts the StringBuilder into a String.
+
+The String becomes the HashMap key.
+
+---
+
+## 4. Optimal Approach: Frequency Counting + HashMap
+
+### Step 1: Create the HashMap
+
+```java
+HashMap<String, List<String>> map = new HashMap<>();
+```
+
+It stores frequency signatures and their corresponding word groups.
+
+### Step 2: Traverse the input
+
+```java
+for (int i = 0; i < strs.length; i++) {
+    String word = strs[i];
+}
+```
+
+- i represents the current word's index.
+- word stores the current string.
+
+### Step 3: Count character frequencies
+
+```java
+int[] freq = new int[26];
+
+for (int j = 0; j < word.length(); j++) {
+    int index = word.charAt(j) - 'a';
+    freq[index]++;
+}
+```
+
+Every character increases its corresponding frequency.
+
+### Step 4: Build the frequency signature
+
+```java
+StringBuilder sb = new StringBuilder();
+
+for (int k = 0; k < 26; k++) {
+    sb.append(freq[k]).append("#");
+}
+```
+
+Why use #?
+
+Without delimiters, different frequency sequences could produce the same concatenated representation.
+
+For example:
+- [1, 11] -> "111"
+- [11, 1] -> "111"
+
+With delimiters:
+- [1, 11] -> "1#11#"
+- [11, 1] -> "11#1#"
+
+The signatures are now distinguishable.
+
+### Step 5: Convert into String
+
+```java
+String key = sb.toString();
+```
+
+- sb is a StringBuilder.
+- key is a String.
+- The contents are the same.
+- sb is not modified.
+
+### Step 6: Check the HashMap
+
+```java
+if (map.containsKey(key)) {
+    map.get(key).add(word);
+} else {
+    List<String> list = new ArrayList<>();
+    list.add(word);
+    map.put(key, list);
+}
+```
+
+Two cases:
+
+**Case 1: Existing key**
+
+```java
+map.get(key).add(word);
+```
+
+- map.get(key) retrieves the existing list.
+- add(word) inserts the current word into that list.
+- No new list is created.
+
+**Case 2: New key**
+
+```java
+List<String> list = new ArrayList<>();
+list.add(word);
+map.put(key, list);
+```
+
+- Create a new list.
+- Add the current word.
+- Insert the key-list pair into the HashMap.
+
+### Step 7: Return the groups
+
+```java
+return new ArrayList<>(map.values());
+```
+
+- map.values() retrieves all the inner lists.
+- new ArrayList creates a new outer list.
+- Return type is List<List<String>>.
+
+---
+
+## 5. Detailed Dry Run
+
+Input:
+
+```java
+["eat", "tea", "tan", "ate", "nat", "bat"]
+```
+
+### Iteration 1: i = 0
+
+```java
+word = "eat";
+```
+
+Frequency updates:
+
+| j | Character | Index | Update |
+|---:|---|---:|---|
+| 0 | e | 4 | freq[4] = 1 |
+| 1 | a | 0 | freq[0] = 1 |
+| 2 | t | 19 | freq[19] = 1 |
+
+Non-zero frequencies:
+
+```text
+a = 1
+e = 1
+t = 1
+```
+
+StringBuilder:
+
+```text
+sb = "1#0#0#0#1#...#1#..."
+```
+
+Convert:
+
+```java
+String key = sb.toString();
+```
+
+Map check:
+
+```java
+map.containsKey(key) // false
+```
+
+Create list:
+
+```java
+list = ["eat"];
+map.put(key, list);
+```
+
+Map now contains one group.
+
+### Iteration 2: i = 1
+
+```java
+word = "tea";
+```
+
+Frequency updates:
+
+| j | Character | Index | Update |
+|---:|---|---:|---|
+| 0 | t | 19 | freq[19] = 1 |
+| 1 | e | 4 | freq[4] = 1 |
+| 2 | a | 0 | freq[0] = 1 |
+
+The frequency pattern is identical to eat.
+
+Therefore:
+
+```java
+map.containsKey(key) // true
+```
+
+Execute:
+
+```java
+map.get(key).add("tea");
+```
+
+Existing list becomes:
+
+```text
+["eat", "tea"]
+```
+
+No new list is created.
+
+### Iteration 3: i = 2
+
+```java
+word = "tan";
+```
+
+Frequency updates:
+
+| j | Character | Index | Update |
+|---:|---|---:|---|
+| 0 | t | 19 | freq[19] = 1 |
+| 1 | a | 0 | freq[0] = 1 |
+| 2 | n | 13 | freq[13] = 1 |
+
+New frequency signature.
+
+```java
+map.containsKey(key) // false
+```
+
+Create:
+
+```java
+list = ["tan"];
+map.put(key, list);
+```
+
+Now two groups exist.
+
+### Iteration 4: i = 3
+
+```java
+word = "ate";
+```
+
+Frequency pattern:
+
+```text
+a = 1
+e = 1
+t = 1
+```
+
+Same signature as eat and tea.
+
+```java
+map.get(key).add("ate");
+```
+
+First list becomes:
+
+```text
+["eat", "tea", "ate"]
+```
+
+### Iteration 5: i = 4
+
+```java
+word = "nat";
+```
+
+Frequency pattern:
+
+```text
+a = 1
+n = 1
+t = 1
+```
+
+Same signature as tan.
+
+```java
+map.get(key).add("nat");
+```
+
+Second list becomes:
+
+```text
+["tan", "nat"]
+```
+
+### Iteration 6: i = 5
+
+```java
+word = "bat";
+```
+
+Frequency pattern:
+
+```text
+a = 1
+b = 1
+t = 1
+```
+
+New signature.
+
+Create:
+
+```java
+list = ["bat"];
+map.put(key, list);
+```
+
+### Final HashMap
+
+```text
+Signature 1 -> ["eat", "tea", "ate"]
+Signature 2 -> ["tan", "nat"]
+Signature 3 -> ["bat"]
+```
+
+### Final Return
+
+```java
+return new ArrayList<>(map.values());
+```
+
+Output:
+
+```java
+[
+    ["eat", "tea", "ate"],
+    ["tan", "nat"],
+    ["bat"]
+]
+```
+
+Note: HashMap does not guarantee group ordering.
+
+---
+
+## 6. Variable Transition Summary
+
+| Variable | Data Type | Purpose |
+|---|---|---|
+| strs | String[] | Input array |
+| i | int | Current word index |
+| word | String | Current word |
+| freq | int[] | Character frequency |
+| j | int | Current character index |
+| index | int | Character's alphabet index |
+| k | int | Frequency array traversal |
+| sb | StringBuilder | Builds frequency signature |
+| key | String | HashMap key |
+| map | HashMap<String, List<String>> | Stores groups |
+| list | List<String> | New anagram group |
+
+### Most Important Transitions
+
+```text
+Input word
+   |
+   v
+String word
+   |
+   v
+int[] freq
+   |
+   v
+StringBuilder sb
+   |
+   v
+String key = sb.toString()
+   |
+   v
+map.containsKey(key)
+   |
+   +---- true ----> map.get(key).add(word)
+   |
+   +---- false ---> Create new List
+                    Add word
+                    map.put(key, list)
+   |
+   v
+new ArrayList<>(map.values())
+   |
+   v
+List<List<String>>
+```
+
+---
+
+## 7. Complexity Analysis
+
+Let:
+- N = number of strings.
+- K = maximum length of a string.
+- 26 = fixed lowercase English alphabet size.
+
+| Operation | Complexity |
+|---|---|
+| Traverse all strings | O(N) |
+| Count characters | O(K) per string |
+| Build signature | O(26) per string |
+| HashMap insertion/lookup | O(26 + K) average per string, accounting for key hashing |
+| Overall time | O(N * K) |
+| Current frequency array | O(26) = O(1) |
+| Stored keys and grouped words | O(N * K) |
+| Overall auxiliary space excluding output | O(N * K) for stored keys |
+
+The returned grouped words are output storage. The HashMap's stored keys and group lists also occupy O(N * K) space.
+
+---
+
+## 8. Common Mistakes
+
+1. Forgetting to create a fresh frequency array for every word.
+2. Forgetting to convert StringBuilder into a String.
+3. Not using delimiters while constructing the key.
+4. Creating a new list even when the key already exists.
+5. Using map.get(key).add(word) without checking whether the key exists.
+6. Forgetting to return new ArrayList<>(map.values()).
+7. Assuming HashMap maintains insertion order.
+
+---
+
+## 9. Interview Explanation
+
+"I use a frequency-counting approach with a HashMap. For each word, I calculate the frequency of all 26 lowercase English characters. I convert this frequency array into a unique string signature and use that signature as the HashMap key. If the key already exists, I add the current word to its existing list. Otherwise, I create a new list and insert it into the map. Finally, I return all the grouped lists using map.values()."
+
+---
+
+## 10. Key Takeaways
+
+- Anagrams have identical character frequencies.
+- Frequency arrays can generate grouping keys.
+- StringBuilder helps construct signatures.
+- toString() converts StringBuilder into String.
+- containsKey() checks whether a key exists.
+- get(key) retrieves the existing value.
+- add(word) modifies the existing list.
+- put(key, list) inserts a new key-value pair.
+- values() retrieves all HashMap values.
+- List<List<String>> represents multiple groups.
+
+---
+
+## 11. Revision Checklist
+
+- [ ] Explain why frequency counting works.
+- [ ] Understand charAt(j) - 'a'.
+- [ ] Understand why freq has size 26.
+- [ ] Explain StringBuilder and toString().
+- [ ] Explain why delimiters are necessary.
+- [ ] Understand containsKey(), get(), and put().
+- [ ] Explain why a new list is created only for a new key.
+- [ ] Explain map.values().
+- [ ] Dry-run the complete example without looking at the solution.
+- [ ] Explain time and space complexity.
