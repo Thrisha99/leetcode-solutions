@@ -998,3 +998,1055 @@ The StringBuilder is used to construct the output, so it is included in output s
 - [ ] Dry-run 999 + 1.
 - [ ] Explain the complexity without confusing output and auxiliary space.
 - [ ] Implement without looking at notes.
+
+
+# 443. String Compression
+
+## 1. Problem Information
+
+| Attribute | Details |
+|---|---|
+| LeetCode Number | 443 |
+| Problem Name | String Compression |
+| Difficulty | Medium |
+| Topic | Strings |
+| Pattern | Two Pointers |
+| Sub-pattern | In-place Array Manipulation |
+| Language | Java |
+| Main Concepts | Consecutive Frequency Counting, Read/Write Pointers |
+| Problem Link | https://leetcode.com/problems/string-compression/ |
+
+---
+
+# 2. Problem Statement
+
+Given an array of characters `chars`, compress it using the following algorithm:
+
+1. Begin with an empty string `s`.
+2. For each group of consecutive repeating characters in `chars`:
+   - If the group's length is 1, append the character to `s`.
+   - Otherwise, append the character followed by the group's length.
+3. Modify the original character array in-place instead of returning a new array.
+4. Return the new length of the compressed array.
+
+If a group's count is greater than 9, each digit must be written separately.
+
+### Important Constraints
+
+- The original array must be modified in-place.
+- The compressed characters must occupy the first `k` positions.
+- Return the value of `k`.
+- Auxiliary space must be O(1) for the optimal solution.
+
+---
+
+# 3. Examples
+
+## Example 1
+
+**Input:**
+
+```java
+chars = ['a','a','b','b','c','c','c'];
+```
+
+Consecutive groups:
+
+```text
+aa | bb | ccc
+```
+
+Compressed representation:
+
+```text
+a2 | b2 | c3
+```
+
+**Modified array:**
+
+```java
+['a','2','b','2','c','3']
+```
+
+**Output:**
+
+```text
+6
+```
+
+## Example 2
+
+**Input:**
+
+```java
+chars = ['a'];
+```
+
+Only one character exists.
+
+No compression is required.
+
+**Output:**
+
+```text
+1
+```
+
+## Example 3
+
+**Input:**
+
+```java
+chars = ['a','b','b','b','b','b','b','b','b','b','b','b','b'];
+```
+
+Here:
+
+- a occurs once.
+- b occurs 12 consecutive times.
+
+Compressed representation:
+
+```text
+a | b12
+```
+
+**Modified array:**
+
+```java
+['a','b','1','2']
+```
+
+**Output:**
+
+```text
+4
+```
+
+## Example 4
+
+**Input:**
+
+```java
+chars = ['a','a','b','a','a'];
+```
+
+Important: Only consecutive characters are grouped.
+
+Groups:
+
+```text
+aa | b | aa
+```
+
+Compressed representation:
+
+```text
+a2ba2
+```
+
+**Output:**
+
+```text
+5
+```
+
+---
+
+# 4. Key Observation
+
+The most important word in this problem is **consecutive**.
+
+Consider:
+
+```text
+['a','a','b','a','a']
+```
+
+There are four occurrences of `a`, but they are not consecutive.
+
+Therefore, we cannot combine them into one group.
+
+Correct compression:
+
+```text
+['a','2','b','a','2']
+```
+
+Incorrect compression:
+
+```text
+['a','4','b']
+```
+
+The task is to count consecutive occurrences, not total character frequency.
+
+This is a Run-Length Encoding (RLE) problem.
+
+---
+
+# 5. Approach 1 – Brute Force Using StringBuilder
+
+## Idea
+
+Instead of modifying the original array directly, create a separate StringBuilder to store the compressed result.
+
+After processing all groups, copy the result back into the original array.
+
+## Algorithm
+
+1. Create an empty StringBuilder.
+2. Initialize `i = 0`.
+3. Traverse the original array.
+4. Store the current character.
+5. Count its consecutive occurrences.
+6. Append the character.
+7. If count > 1, append the count.
+8. Copy the StringBuilder contents into the original array.
+9. Return the StringBuilder length.
+
+## Java Code
+
+```java
+class Solution {
+    public int compress(char[] chars) {
+
+        StringBuilder sb = new StringBuilder();
+
+        int i = 0;
+        int n = chars.length;
+
+        while (i < n) {
+
+            char current = chars[i];
+            int count = 0;
+
+            while (i < n && chars[i] == current) {
+                count++;
+                i++;
+            }
+
+            sb.append(current);
+
+            if (count > 1) {
+                sb.append(count);
+            }
+        }
+
+        for (int j = 0; j < sb.length(); j++) {
+            chars[j] = sb.charAt(j);
+        }
+
+        return sb.length();
+    }
+}
+```
+
+## Dry Run
+
+Input:
+
+```java
+chars = ['a','a','b','b','c','c','c'];
+```
+
+Initially:
+
+```text
+i = 0
+sb = ""
+```
+
+| Iteration | i at start | Character | Count | Action | StringBuilder |
+|---|---:|---|---:|---|---|
+| 1 | 0 | a | 2 | Append a2 | a2 |
+| 2 | 2 | b | 2 | Append b2 | a2b2 |
+| 3 | 4 | c | 3 | Append c3 | a2b2c3 |
+
+Final StringBuilder:
+
+```text
+a2b2c3
+```
+
+Copy into the original array:
+
+```java
+['a','2','b','2','c','3']
+```
+
+Return:
+
+```text
+6
+```
+
+## Complexity
+
+Let n be the original array length.
+
+- Time Complexity: O(n)
+- Auxiliary Space: O(n)
+
+The StringBuilder stores the complete compressed result separately.
+
+**Limitation:** This approach does not satisfy the O(1) auxiliary-space requirement.
+
+---
+
+# 6. Approach 2 – Better: In-place Two Pointers
+
+## Idea
+
+Instead of creating a separate StringBuilder, modify the original character array directly.
+
+We use two pointers:
+
+1. Read pointer (`i`)
+2. Write pointer (`write`)
+
+### Read Pointer
+
+Responsible for:
+
+- Reading original characters.
+- Identifying consecutive groups.
+- Counting character occurrences.
+
+### Write Pointer
+
+Responsible for:
+
+- Writing the compressed character.
+- Writing the count digits.
+- Maintaining the compressed array length.
+
+## Visual Representation
+
+```text
+Original array:
+
+[a, a, b, b, c, c, c]
+ ^
+ i = 0
+
+write = 0
+```
+
+The read pointer identifies groups, while the write pointer stores the compressed representation.
+
+## Algorithm
+
+1. Initialize `i = 0` and `write = 0`.
+2. Traverse while `i < chars.length`.
+3. Store the current character.
+4. Initialize count to zero.
+5. Count all consecutive occurrences.
+6. Write the current character at `chars[write]`.
+7. Increment write.
+8. If count > 1:
+   - Convert count into a String.
+   - Write every digit into the original array.
+9. Return write.
+
+## Java Code
+
+```java
+class Solution {
+    public int compress(char[] chars) {
+
+        int i = 0;
+        int write = 0;
+
+        while (i < chars.length) {
+
+            char current = chars[i];
+            int count = 0;
+
+            while (i < chars.length && chars[i] == current) {
+                count++;
+                i++;
+            }
+
+            chars[write] = current;
+            write++;
+
+            if (count > 1) {
+
+                String num = String.valueOf(count);
+
+                for (int j = 0; j < num.length(); j++) {
+                    chars[write] = num.charAt(j);
+                    write++;
+                }
+            }
+        }
+
+        return write;
+    }
+}
+```
+
+## Detailed Explanation
+
+### Step 1: Initialize pointers
+
+```java
+int i = 0;
+int write = 0;
+```
+
+- `i` reads the input.
+- `write` tracks the next position to write.
+
+### Step 2: Outer loop
+
+```java
+while (i < chars.length)
+```
+
+Continues until all original characters are processed.
+
+### Step 3: Store current character
+
+```java
+char current = chars[i];
+```
+
+Stores the character whose consecutive group we are processing.
+
+### Step 4: Count occurrences
+
+```java
+int count = 0;
+
+while (i < chars.length && chars[i] == current) {
+    count++;
+    i++;
+}
+```
+
+The inner loop:
+
+- Checks the current character.
+- Increases count.
+- Moves the read pointer forward.
+
+When a different character is found, the group ends.
+
+### Step 5: Write the character
+
+```java
+chars[write] = current;
+write++;
+```
+
+Every group must contain its character.
+
+Even if the character occurs only once, we must write it.
+
+### Step 6: Write the count
+
+```java
+if (count > 1) {
+    String num = String.valueOf(count);
+
+    for (int j = 0; j < num.length(); j++) {
+        chars[write] = num.charAt(j);
+        write++;
+    }
+}
+```
+
+We append the count only when it is greater than 1.
+
+For example:
+
+```java
+count = 12;
+```
+
+Converting to String:
+
+```text
+"12"
+```
+
+We write the two characters separately:
+
+```text
+'1'
+'2'
+```
+
+### Step 7: Return compressed length
+
+```java
+return write;
+```
+
+The write pointer indicates how many characters have been written.
+
+---
+
+# 7. Complete Dry Run – Two Pointer Approach
+
+Input:
+
+```java
+chars = ['a','a','b','b','c','c','c'];
+```
+
+Initial state:
+
+```text
+i = 0
+write = 0
+```
+
+## Iteration 1 – Character 'a'
+
+Current values:
+
+```text
+i = 0
+write = 0
+current = 'a'
+count = 0
+```
+
+Inner loop:
+
+| i | chars[i] | Condition | Count |
+|---:|---|---|---:|
+| 0 | a | a == a | 1 |
+| 1 | a | a == a | 2 |
+| 2 | b | b != a | Stop |
+
+After counting:
+
+```text
+i = 2
+count = 2
+```
+
+Write character:
+
+```java
+chars[write] = 'a';
+write++;
+```
+
+Array:
+
+```text
+[a, a, b, b, c, c, c]
+ ^
+ write = 1
+```
+
+Write count:
+
+```java
+chars[write] = '2';
+write++;
+```
+
+Array:
+
+```text
+[a, 2, b, b, c, c, c]
+    ^
+ write = 2
+```
+
+## Iteration 2 – Character 'b'
+
+Current values:
+
+```text
+i = 2
+write = 2
+current = 'b'
+count = 0
+```
+
+Inner loop:
+
+| i | chars[i] | Condition | Count |
+|---:|---|---|---:|
+| 2 | b | b == b | 1 |
+| 3 | b | b == b | 2 |
+| 4 | c | c != b | Stop |
+
+After counting:
+
+```text
+i = 4
+count = 2
+```
+
+Write character:
+
+```text
+[a, 2, b, b, c, c, c]
+       ^
+     write = 3
+```
+
+Write count:
+
+```text
+[a, 2, b, 2, c, c, c]
+          ^
+        write = 4
+```
+
+## Iteration 3 – Character 'c'
+
+Current values:
+
+```text
+i = 4
+write = 4
+current = 'c'
+count = 0
+```
+
+Inner loop:
+
+| i | chars[i] | Condition | Count |
+|---:|---|---|---:|
+| 4 | c | c == c | 1 |
+| 5 | c | c == c | 2 |
+| 6 | c | c == c | 3 |
+| 7 | Out of bounds | Stop | 3 |
+
+After counting:
+
+```text
+i = 7
+count = 3
+```
+
+Write character:
+
+```text
+[a, 2, b, 2, c, c, c]
+             ^
+           write = 5
+```
+
+Write count:
+
+```text
+[a, 2, b, 2, c, 3, c]
+                ^
+              write = 6
+```
+
+## Final State
+
+```text
+Original array:
+
+['a','2','b','2','c','3','c']
+```
+
+Valid compressed portion:
+
+```text
+['a','2','b','2','c','3']
+```
+
+Return:
+
+```text
+6
+```
+
+Note: The array's physical length remains unchanged. Only the first `write` positions are relevant.
+
+---
+
+# 8. Approach 3 – Optimal: Two Pointers + Mathematical Digit Extraction
+
+## Why improve Approach 2?
+
+Approach 2 uses:
+
+```java
+String num = String.valueOf(count);
+```
+
+This creates a temporary String for the count.
+
+For the strict O(1) auxiliary-space implementation, we can extract each digit mathematically and write it directly into the original array.
+
+## Idea
+
+Suppose:
+
+```java
+count = 12;
+```
+
+We need to write:
+
+```text
+'1', '2'
+```
+
+First, identify the largest power of 10 that fits into the count.
+
+For 12:
+
+```text
+divisor = 10
+```
+
+Then:
+
+```java
+digit = count / divisor;
+```
+
+First digit:
+
+```text
+12 / 10 = 1
+```
+
+Remove the processed digit:
+
+```java
+count = count % divisor;
+```
+
+Now:
+
+```text
+12 % 10 = 2
+```
+
+Reduce divisor:
+
+```text
+divisor = 1
+```
+
+Second digit:
+
+```text
+2 / 1 = 2
+```
+
+This allows us to write digits without converting the count into a String.
+
+## Java Code
+
+```java
+class Solution {
+    public int compress(char[] chars) {
+
+        int i = 0;
+        int write = 0;
+
+        while (i < chars.length) {
+
+            char current = chars[i];
+            int count = 0;
+
+            while (i < chars.length && chars[i] == current) {
+                count++;
+                i++;
+            }
+
+            chars[write] = current;
+            write++;
+
+            if (count > 1) {
+
+                int divisor = 1;
+
+                while (count / divisor >= 10) {
+                    divisor *= 10;
+                }
+
+                while (divisor > 0) {
+
+                    int digit = count / divisor;
+
+                    chars[write] = (char) ('0' + digit);
+                    write++;
+
+                    count %= divisor;
+                    divisor /= 10;
+                }
+            }
+        }
+
+        return write;
+    }
+}
+```
+
+## Detailed explanation of mathematical digit extraction
+
+Consider:
+
+```java
+count = 123;
+```
+
+Find the divisor:
+
+```text
+divisor = 1
+123 / 1 = 123 → >= 10 → divisor = 10
+
+123 / 10 = 12 → >= 10 → divisor = 100
+
+123 / 100 = 1 → < 10 → stop
+```
+
+Now extract digits:
+
+| Iteration | Count | Divisor | Digit = count/divisor | Remaining count |
+|---:|---:|---:|---:|---:|
+| 1 | 123 | 100 | 1 | 23 |
+| 2 | 23 | 10 | 2 | 3 |
+| 3 | 3 | 1 | 3 | 0 |
+
+The digits are written in the correct order:
+
+```text
+'1', '2', '3'
+```
+
+This avoids creating an additional String or character array.
+
+---
+
+# 9. Complexity Comparison
+
+Let `n` be the length of the original character array.
+
+| Approach | Time Complexity | Auxiliary Space |
+|---|---|---|
+| Brute Force – StringBuilder | O(n) | O(n) |
+| Better – Two pointers + String conversion | O(n) | O(log n) temporary space |
+| Optimal – Two pointers + Math | O(n) | O(1) |
+
+### Why is the optimal approach O(n) time?
+
+- Every input character is read once.
+- Every compressed character is written once.
+- The digit extraction processes only the digits of each count.
+- The total number of written digits is bounded by the input size.
+
+Therefore, the total time complexity is O(n).
+
+### Why is auxiliary space O(1)?
+
+We use only a fixed number of variables:
+
+```java
+int i;
+int write;
+int count;
+int divisor;
+int digit;
+char current;
+```
+
+No extra arrays, collections, StringBuilder, or temporary strings are created.
+
+The original input array is modified directly.
+
+---
+
+# 10. Important Edge Cases
+
+| Input | Compressed portion | Return |
+|---|---|---:|
+| `['a']` | `['a']` | 1 |
+| `['a','a']` | `['a','2']` | 2 |
+| `['a','b','c']` | `['a','b','c']` | 3 |
+| `['a','a','a','a']` | `['a','4']` | 2 |
+| `['a','a','b','b','b']` | `['a','2','b','3']` | 4 |
+| 12 consecutive `b` characters | `['b','1','2']` | 3 |
+| `['a','a','b','a','a']` | `['a','2','b','a','2']` | 5 |
+
+---
+
+# 11. Common Mistakes
+
+### Mistake 1: Counting all occurrences instead of consecutive occurrences
+
+Incorrect:
+
+```text
+a a b a a → a4b
+```
+
+Correct:
+
+```text
+a a | b | a a → a2ba2
+```
+
+### Mistake 2: Writing count 1
+
+Incorrect:
+
+```text
+a1
+```
+
+Correct:
+
+```text
+a
+```
+
+### Mistake 3: Forgetting multi-digit counts
+
+For count = 12, write:
+
+```text
+'1', '2'
+```
+
+Not a single character representing 12.
+
+### Mistake 4: Returning original array length
+
+Incorrect:
+
+```java
+return chars.length;
+```
+
+Correct:
+
+```java
+return write;
+```
+
+### Mistake 5: Using an additional array
+
+The optimal solution must modify the original array.
+
+### Mistake 6: Incorrect pointer updates
+
+The read pointer must advance throughout the current group.
+
+The write pointer must advance after every character or count digit written.
+
+---
+
+# 12. Interview Explanation
+
+"I use two pointers to perform in-place compression.
+
+The read pointer identifies consecutive groups of identical characters and calculates their frequency. The write pointer stores the compressed representation directly into the original character array.
+
+For every group, I first write the character. If the count is greater than one, I write its digits individually. I use mathematical digit extraction to avoid creating additional data structures.
+
+Finally, I return the write pointer, which represents the compressed length.
+
+The solution takes O(n) time and O(1) auxiliary space."
+
+---
+
+# 13. Important Java Concepts
+
+| Concept | Application |
+|---|---|
+| `char[]` | Mutable character array |
+| `chars[i]` | Access and modify array positions |
+| Nested while loops | Count consecutive characters |
+| Two pointers | Read and write independently |
+| `String.valueOf()` | Convert count to String in Approach 2 |
+| `% 10` | Extract remainder/digit |
+| `/ 10` | Integer division |
+| Character arithmetic | Convert a digit into a character |
+| In-place modification | Avoid additional result array |
+
+---
+
+# 14. Pattern Recognition
+
+Recognize this problem when you see:
+
+- Consecutive repeating elements.
+- In-place modification.
+- Requirement to reduce or compress array contents.
+- Separate reading and writing operations.
+- A requirement to return the new valid length.
+
+**Pattern: Two Pointers + In-place Array Manipulation + Run-Length Encoding.**
+
+---
+
+# 15. Revision Checklist
+
+- [ ] Understand consecutive frequency counting.
+- [ ] Understand why non-consecutive characters form separate groups.
+- [ ] Understand read pointer `i`.
+- [ ] Understand write pointer `write`.
+- [ ] Understand why count 1 is not written.
+- [ ] Handle counts greater than 9.
+- [ ] Understand mathematical digit extraction.
+- [ ] Understand why we return `write`.
+- [ ] Implement the optimal solution independently.
+- [ ] Explain O(n) time and O(1) auxiliary space.
+
+---
+
+# 16. Git Information
+
+## File Names
+
+```text
+443-String-Compression.java
+443-String-Compression.md
+```
+
+## Git Commands
+
+```bash
+git status
+
+git add Strings/443-String-Compression.java
+
+git add Strings/443-String-Compression.md
+
+git commit -m "Add LeetCode 443 String Compression"
+
+git push origin main
+```
+
+If you are working on another branch, replace `main` with your current branch name.
+
+---
+
+# 17. Final Takeaway
+
+This problem teaches an important in-place manipulation technique.
+
+Remember the responsibilities:
+
+- `i` → Reads and counts.
+- `write` → Writes the compressed result.
+- `count` → Stores consecutive frequency.
+- `divisor` → Helps extract individual count digits.
+
+**Recommended solution:** Approach 3 – Two Pointers + Mathematical Digit Extraction.
+
+Time: O(n)
+
+Auxiliary Space: O(1)
+
+The most important learning outcome is understanding how to read from and write to the same array safely using two pointers.
