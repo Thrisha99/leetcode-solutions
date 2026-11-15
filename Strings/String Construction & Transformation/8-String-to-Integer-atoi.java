@@ -3,6 +3,7 @@
  *
  * Difficulty: Medium
  * Topics: String, Simulation
+ * Pattern: String Traversal + Overflow Handling
  *
  * Problem:
  * Convert a string into a 32-bit signed integer.
@@ -11,7 +12,7 @@
  * 1. Ignore leading spaces.
  * 2. Identify the optional sign (+ or -).
  * 3. Read consecutive digits.
- * 4. Stop at the first non-digit after parsing begins.
+ * 4. Stop at the first non-digit.
  * 5. Return 0 if no digits are found.
  * 6. Clamp overflow to Integer.MAX_VALUE or Integer.MIN_VALUE.
  *
@@ -21,52 +22,51 @@
  * Input:  "4193 with words"       Output: 4193
  * Input:  "words and 987"         Output: 0
  * Input:  "-91283472332"          Output: -2147483648
+ * Input:  "2147483648"            Output: 2147483647
+ *
+ * Integer Range:
+ * Integer.MAX_VALUE =  2147483647
+ * Integer.MIN_VALUE = -2147483648
  *
  * --------------------------------------------------
- * APPROACH 1: Using Built-in Parsing (Conceptual)
+ * APPROACH 1: Built-in Parsing (Conceptual)
  * --------------------------------------------------
  *
- * Steps:
- * 1. Skip leading spaces.
- * 2. Extract the sign.
- * 3. Extract consecutive digits.
- * 4. Convert using parsing with exception handling.
+ * Extract the numeric prefix and convert using
+ * Integer.parseInt().
  *
  * Limitation:
  * Integer.parseInt() throws NumberFormatException
- * for values outside the int range.
- *
- * This approach is useful for understanding the
- * problem, but manual parsing is preferred.
+ * when the value exceeds the int range.
  *
  * --------------------------------------------------
- * APPROACH 2: Manual Parsing with Positive Accumulator
+ * APPROACH 2: Manual Parsing with int Accumulator
  * --------------------------------------------------
  *
- * Idea:
- * Build the number using:
+ * Formula:
  * result = result * 10 + digit
  *
- * Before multiplication, check overflow.
+ * Before updating result, check overflow.
  *
- * Important:
- * A positive accumulator cannot represent the
- * magnitude 2147483648 in an int. Therefore, this
- * approach needs special handling for Integer.MIN_VALUE.
+ * Limitation:
+ * int cannot represent positive 2147483648.
+ * Therefore, a positive accumulator using int needs
+ * special handling for Integer.MIN_VALUE.
  *
  * --------------------------------------------------
- * APPROACH 3: Negative Accumulator (Optimal)
+ * APPROACH 3: Manual Parsing with long Accumulator
  * --------------------------------------------------
  *
- * Idea:
- * Build the number as a negative value.
+ * IDEA:
+ * Use long to temporarily store the absolute value.
  *
- * Why?
- * Integer.MIN_VALUE = -2147483648
- * Integer.MAX_VALUE =  2147483647
+ * Why long?
+ * int maximum  = 2147483647
+ * int minimum  = -2147483648
+ * long can safely store 2147483648.
  *
- * The negative range has one extra value.
- * Negative accumulation can represent both limits.
+ * Before updating result, check whether the next
+ * digit would exceed the int boundary.
  *
  * Time Complexity: O(n)
  * Auxiliary Space: O(1)
@@ -74,11 +74,11 @@
 
 class Solution {
 
-    // APPROACH 3: Optimal negative accumulation
+    // APPROACH 3: Optimal solution using long accumulator
     public int myAtoi(String s) {
 
-        int n = s.length();
         int i = 0;
+        int n = s.length();
 
         // Step 1: Skip leading spaces
         while (i < n && s.charAt(i) == ' ') {
@@ -95,43 +95,33 @@ class Solution {
             i++;
         }
 
-        // Step 3: Set the negative boundary
-        int limit = (sign == -1)
-                ? Integer.MIN_VALUE
-                : -Integer.MAX_VALUE;
+        // Step 3: Initialize long accumulator
+        long result = 0;
 
-        int multMin = limit / 10;
-
-        // Step 4: Build the number negatively
-        int result = 0;
-
+        // Step 4: Process consecutive digits
         while (i < n &&
                s.charAt(i) >= '0' &&
                s.charAt(i) <= '9') {
 
             int digit = s.charAt(i) - '0';
 
-            // Check overflow before multiplying by 10
-            if (result < multMin) {
-                return sign == -1
-                        ? Integer.MIN_VALUE
-                        : Integer.MAX_VALUE;
+            // Step 5: Check overflow BEFORE updating result
+            if (result > Integer.MAX_VALUE / 10 ||
+                (result == Integer.MAX_VALUE / 10 &&
+                 digit > (sign == 1 ? 7 : 8))) {
+
+                return sign == 1
+                        ? Integer.MAX_VALUE
+                        : Integer.MIN_VALUE;
             }
 
-            result *= 10;
+            // Step 6: Build number
+            result = result * 10 + digit;
 
-            // Check overflow before subtracting digit
-            if (result < limit + digit) {
-                return sign == -1
-                        ? Integer.MIN_VALUE
-                        : Integer.MAX_VALUE;
-            }
-
-            result -= digit;
             i++;
         }
 
-        // Step 5: Apply the sign
-        return sign * result;
+        // Step 7: Apply sign and convert to int
+        return (int) (result * sign);
     }
 }

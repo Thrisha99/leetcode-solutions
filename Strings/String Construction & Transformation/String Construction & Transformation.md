@@ -2052,26 +2052,29 @@ Auxiliary Space: O(1)
 The most important learning outcome is understanding how to read from and write to the same array safely using two pointers.
 
 
+
+
 # LeetCode 8 – String to Integer (atoi)
 
 **Difficulty:** Medium  
 **Topics:** String, Simulation  
-**Pattern:** String Traversal + Boundary Checking
+**Pattern:** String Traversal + Overflow Handling  
+**Language:** Java
 
 ---
 
 ## 1. Problem Statement
 
-Implement the `myAtoi(String s)` function that converts a string into a 32-bit signed integer.
+Implement `myAtoi(String s)` to convert a string into a 32-bit signed integer.
 
 Follow these rules:
 
-1. Ignore leading whitespace.
-2. Identify the optional sign (`+` or `-`).
+1. Ignore leading spaces.
+2. Check for an optional `+` or `-` sign.
 3. Read consecutive digits.
-4. Stop at the first non-digit after parsing begins.
-5. If no digits are found, return `0`.
-6. If the result exceeds the 32-bit signed integer range, clamp it.
+4. Stop at the first non-digit after the number starts.
+5. Return `0` if no digits are found.
+6. If the number exceeds the 32-bit signed integer range, clamp it.
 
 ### Integer Range
 
@@ -2082,46 +2085,85 @@ Follow these rules:
 
 ## 2. Examples
 
-| Input | Output |
-|---|---:|
-| "42" | 42 |
-| "   -42" | -42 |
-| "4193 with words" | 4193 |
-| "words and 987" | 0 |
-| "-91283472332" | -2147483648 |
-| "2147483648" | 2147483647 |
-| "+-12" | 0 |
-
-Important: The algorithm does not search for a number anywhere in the string. It only parses the valid numeric prefix.
+| Input | Output | Explanation |
+|---|---:|---|
+| "42" | 42 | Read both digits |
+| "   -42" | -42 | Skip spaces and detect negative sign |
+| "4193 with words" | 4193 | Stop at first non-digit |
+| "words and 987" | 0 | No initial number |
+| "-91283472332" | -2147483648 | Negative overflow |
+| "2147483648" | 2147483647 | Positive overflow |
+| "+-12" | 0 | Invalid sign sequence |
+| "000123" | 123 | Leading zeros |
 
 ---
 
-## 3. Approach 1 – Built-in Parsing (Conceptual)
+## 3. Core Concepts
+
+### 3.1 Character to digit conversion
+
+```java
+int digit = s.charAt(i) - '0';
+```
+
+A character digit is not directly the same as an integer digit.
+
+Examples:
+
+```text
+'4' - '0' = 4
+'7' - '0' = 7
+'9' - '0' = 9
+```
+
+### 3.2 Digit validation
+
+Correct condition:
+
+```java
+s.charAt(i) >= '0' && s.charAt(i) <= '9'
+```
+
+This ensures that only numeric characters are processed.
+
+### 3.3 String traversal
+
+We use one index:
+
+```java
+int i = 0;
+```
+
+The index moves forward through the string.
+
+Each character is processed at most once.
+
+---
+
+## 4. Approach 1 – Built-in Parsing (Conceptual)
 
 ### Idea
 
 1. Remove leading spaces.
 2. Identify the sign.
-3. Extract consecutive digits.
-4. Convert the extracted number using Integer.parseInt().
+3. Extract the numeric prefix.
+4. Convert using `Integer.parseInt()`.
 
 ### Limitation
 
-`Integer.parseInt()` throws NumberFormatException when the value exceeds the int range.
+`Integer.parseInt()` throws `NumberFormatException` if the number exceeds the integer range.
 
-Therefore, this is not the preferred implementation for this problem.
+This approach does not independently implement the required overflow handling.
 
 ---
 
-## 4. Approach 2 – Manual Parsing with Positive Accumulator
+## 5. Approach 2 – Manual Parsing with int Accumulator
 
-### Idea
+### Formula
 
-Build the number digit by digit.
-
-Formula:
-
-`result = result * 10 + digit`
+```java
+result = result * 10 + digit;
+```
 
 Example: 428
 
@@ -2131,67 +2173,70 @@ Example: 428
 | 2 | 4 * 10 + 2 | 42 |
 | 8 | 42 * 10 + 8 | 428 |
 
-### Overflow Detection
+### Overflow problem
 
-Before updating the result:
-
-```java
-if (result > Integer.MAX_VALUE / 10 ||
-    (result == Integer.MAX_VALUE / 10 &&
-     digit > (sign == 1 ? 7 : 8))) {
-    // Handle overflow
-}
-```
-
-### Why divide MAX_VALUE by 10?
+Suppose:
 
 ```text
-Integer.MAX_VALUE = 2147483647
-
-2147483647 / 10 = 214748364
+result = 214748364
+digit = 8
 ```
 
-If the current result is greater than 214748364, appending any digit will cause overflow.
-
-If it equals 214748364, the next digit must be checked.
-
-### Why 7 for positive and 8 for negative?
+Then:
 
 ```text
-Positive maximum = 2147483647
-Negative minimum = -2147483648
+214748364 * 10 + 8
+= 2147483648
 ```
 
-The positive boundary ends in 7, while the negative boundary has magnitude ending in 8.
+But `2147483648` cannot fit inside Java `int`.
 
-**Important limitation:** A positive `int` accumulator cannot store the magnitude 2147483648. A correct positive-accumulator implementation must handle the negative minimum specially rather than performing that final multiplication.
+A positive accumulator using `int` therefore needs special handling for the negative minimum boundary.
 
 ---
 
-## 5. Approach 3 – Negative Accumulator (Optimal)
+## 6. Approach 3 – Manual Parsing with long Accumulator (Final Approach)
 
-### Why use a negative accumulator?
+### Why use long?
 
-Java integer limits are asymmetric:
+Java integer ranges:
 
 ```text
-Integer.MAX_VALUE =  2147483647
-Integer.MIN_VALUE = -2147483648
+int:
+Maximum =  2147483647
+Minimum = -2147483648
+
+long:
+Maximum =  9223372036854775807
+Minimum = -9223372036854775808
 ```
 
-The negative range has one additional value.
+The absolute magnitude of the minimum `int` is 2147483648.
 
-A positive accumulator cannot represent 2147483648, but a negative accumulator can represent -2147483648.
+That magnitude cannot be stored in an `int`, but it can be stored in a `long`.
 
-Therefore, we build the number negatively.
+Therefore, we temporarily build the absolute number using `long`.
+
+### Algorithm
+
+1. Initialize index and string length.
+2. Skip leading spaces.
+3. Identify the sign.
+4. Initialize `long result = 0`.
+5. Read consecutive digits.
+6. Convert each character into an integer digit.
+7. Check overflow before updating the result.
+8. Build the number.
+9. Apply the sign and convert to `int`.
 
 ### Complete Java Code
 
 ```java
 class Solution {
     public int myAtoi(String s) {
-        int n = s.length();
+
         int i = 0;
+        int n = s.length();
 
         // Skip leading spaces
         while (i < n && s.charAt(i) == ' ') {
@@ -2208,197 +2253,184 @@ class Solution {
             i++;
         }
 
-        // Set negative boundary
-        int limit = (sign == -1)
-                ? Integer.MIN_VALUE
-                : -Integer.MAX_VALUE;
+        // Long accumulator
+        long result = 0;
 
-        int multMin = limit / 10;
-
-        int result = 0;
-
+        // Process consecutive digits
         while (i < n &&
                s.charAt(i) >= '0' &&
                s.charAt(i) <= '9') {
 
             int digit = s.charAt(i) - '0';
 
-            // Check multiplication overflow
-            if (result < multMin) {
-                return sign == -1
-                        ? Integer.MIN_VALUE
-                        : Integer.MAX_VALUE;
+            // Check overflow before updating result
+            if (result > Integer.MAX_VALUE / 10 ||
+                (result == Integer.MAX_VALUE / 10 &&
+                 digit > (sign == 1 ? 7 : 8))) {
+
+                return sign == 1
+                        ? Integer.MAX_VALUE
+                        : Integer.MIN_VALUE;
             }
 
-            result *= 10;
+            result = result * 10 + digit;
 
-            // Check subtraction overflow
-            if (result < limit + digit) {
-                return sign == -1
-                        ? Integer.MIN_VALUE
-                        : Integer.MAX_VALUE;
-            }
-
-            result -= digit;
             i++;
         }
 
-        return sign * result;
+        return (int) (result * sign);
     }
 }
 ```
 
 ---
 
-## 6. Detailed Explanation of Important Variables
+## 7. Detailed Explanation of Overflow Checking
 
-| Variable | Purpose |
-|---|---|
-| `n` | Length of input string |
-| `i` | Current index |
-| `sign` | 1 for positive, -1 for negative |
-| `limit` | Allowed negative boundary |
-| `multMin` | Minimum safe value before multiplication |
-| `digit` | Numeric value of current character |
-| `result` | Number constructed negatively |
-
-### Character to digit conversion
+This is the most important part of the problem.
 
 ```java
-int digit = s.charAt(i) - '0';
+if (result > Integer.MAX_VALUE / 10 ||
+    (result == Integer.MAX_VALUE / 10 &&
+     digit > (sign == 1 ? 7 : 8))) {
+
+    return sign == 1
+            ? Integer.MAX_VALUE
+            : Integer.MIN_VALUE;
+}
 ```
 
-Examples:
+### Step 1: Understand MAX_VALUE
 
 ```text
-'4' - '0' = 4
-'8' - '0' = 8
-'0' - '0' = 0
+Integer.MAX_VALUE = 2147483647
 ```
+
+Divide by 10:
+
+```text
+2147483647 / 10 = 214748364
+```
+
+We use this value to detect overflow before appending another digit.
+
+### Step 2: First condition
+
+```java
+result > Integer.MAX_VALUE / 10
+```
+
+Equivalent to:
+
+```java
+result > 214748364
+```
+
+If the current result is greater than 214748364, appending any digit will cause overflow.
+
+Example:
+
+```text
+result = 214748365
+digit = 0
+
+New number = 2147483650
+```
+
+Overflow is guaranteed.
+
+### Step 3: Second condition
+
+```java
+result == Integer.MAX_VALUE / 10
+```
+
+Equivalent to:
+
+```java
+result == 214748364
+```
+
+When the result is exactly 214748364, we must inspect the next digit.
+
+### Step 4: Why 7 for positive and 8 for negative?
+
+```text
+Positive maximum =  2147483647
+Negative minimum = -2147483648
+```
+
+The positive boundary ends in 7.
+
+The negative boundary has absolute magnitude ending in 8.
+
+Therefore:
+
+```java
+digit > (sign == 1 ? 7 : 8)
+```
+
+means:
+
+- Positive number: digit must not exceed 7.
+- Negative number: digit must not exceed 8.
+
+### Step 5: Ternary operator
+
+```java
+sign == 1 ? 7 : 8
+```
+
+Equivalent to:
+
+```java
+if (sign == 1) {
+    threshold = 7;
+} else {
+    threshold = 8;
+}
+```
+
+### Step 6: Overflow return
+
+```java
+return sign == 1
+        ? Integer.MAX_VALUE
+        : Integer.MIN_VALUE;
+```
+
+Positive overflow returns the maximum integer.
+
+Negative overflow returns the minimum integer.
 
 ---
 
-## 7. Negative Accumulator – Overflow Logic
-
-### Step 1
-
-```java
-int limit = (sign == -1)
-        ? Integer.MIN_VALUE
-        : -Integer.MAX_VALUE;
-```
-
-For negative input:
-
-```text
-limit = -2147483648
-```
-
-For positive input:
-
-```text
-limit = -2147483647
-```
-
-We use negative boundaries because the result is accumulated negatively.
-
-### Step 2
-
-```java
-int multMin = limit / 10;
-```
-
-This calculates the minimum safe value before multiplying by 10.
-
-For negative input:
-
-```text
--2147483648 / 10 = -214748364
-```
-
-### Step 3
-
-```java
-if (result < multMin)
-```
-
-If true, multiplying by 10 would exceed the allowed negative boundary.
-
-### Step 4
-
-```java
-result *= 10;
-```
-
-Multiply the accumulated negative value by 10.
-
-### Step 5
-
-```java
-if (result < limit + digit)
-```
-
-We check whether subtracting the next digit would go below the allowed limit.
-
-### Step 6
-
-```java
-result -= digit;
-```
-
-Append the digit to the negative number.
-
-For example:
-
-```text
-result = -42
-digit = 8
-
-result = -42 * 10
-       = -420
-
-result = -420 - 8
-       = -428
-```
-
-### Step 7
-
-```java
-return sign * result;
-```
-
-If the input was positive, the negative accumulated value is converted to positive.
-
-If the input was negative, it remains negative.
-
----
-
-## 8. Dry Run 1 – Positive Number
+## 8. Detailed Dry Run 1 – Positive Number
 
 Input:
 
 ```text
-s = "123"
+"123"
 ```
 
-Initial state:
+Initial:
 
 ```text
+i = 0
 sign = 1
-limit = -2147483647
 result = 0
 ```
 
-| Digit | Before update | After multiplying | After subtracting digit |
-|---|---:|---:|---:|
-| 1 | 0 | 0 | -1 |
-| 2 | -1 | -10 | -12 |
-| 3 | -12 | -120 | -123 |
+| Index | Character | Digit | Calculation | Result |
+|---:|:---:|---:|---|---:|
+| 0 | 1 | 1 | 0 * 10 + 1 | 1 |
+| 1 | 2 | 2 | 1 * 10 + 2 | 12 |
+| 2 | 3 | 3 | 12 * 10 + 3 | 123 |
 
 Final:
 
 ```java
-return 1 * -123;
+return (int) (123 * 1);
 ```
 
 Output:
@@ -2407,31 +2439,40 @@ Output:
 123
 ```
 
-## 9. Dry Run 2 – Negative Number
+---
+
+## 9. Detailed Dry Run 2 – Negative Number
 
 Input:
 
 ```text
-s = "-42"
+"   -42"
 ```
 
-Initial:
+### Step 1: Skip spaces
+
+```text
+i = 3
+```
+
+### Step 2: Identify sign
 
 ```text
 sign = -1
-limit = -2147483648
-result = 0
+i = 4
 ```
 
-| Digit | Before update | After multiplying | After subtracting |
-|---|---:|---:|---:|
-| 4 | 0 | 0 | -4 |
-| 2 | -4 | -40 | -42 |
+### Step 3: Process digits
+
+| Index | Character | Digit | Calculation | Result |
+|---:|:---:|---:|---|---:|
+| 4 | 4 | 4 | 0 * 10 + 4 | 4 |
+| 5 | 2 | 2 | 4 * 10 + 2 | 42 |
 
 Final:
 
 ```java
-return -1 * -42;
+return (int) (42 * -1);
 ```
 
 Output:
@@ -2440,7 +2481,9 @@ Output:
 -42
 ```
 
-## 10. Dry Run 3 – Positive Overflow
+---
+
+## 10. Detailed Dry Run 3 – Positive Overflow
 
 Input:
 
@@ -2448,48 +2491,32 @@ Input:
 "2147483648"
 ```
 
-Positive limit:
+At the final digit:
 
 ```text
-limit = -2147483647
-multMin = -214748364
-```
-
-The accumulated result reaches:
-
-```text
-result = -214748364
-```
-
-Next digit:
-
-```text
+result = 214748364
 digit = 8
+sign = 1
 ```
 
-After multiplication:
+First condition:
 
 ```text
-result = -2147483640
+214748364 > 214748364
+False
 ```
 
-Check:
+Second condition:
 
 ```text
-limit + digit
-= -2147483647 + 8
-= -2147483639
+214748364 == 214748364
+True
+
+8 > 7
+True
 ```
 
-Now:
-
-```text
--2147483640 < -2147483639
-```
-
-True.
-
-Therefore, positive overflow is detected.
+Overflow detected.
 
 Output:
 
@@ -2497,7 +2524,9 @@ Output:
 2147483647
 ```
 
-## 11. Dry Run 4 – Exact Negative Minimum
+---
+
+## 11. Detailed Dry Run 4 – Negative Minimum
 
 Input:
 
@@ -2505,33 +2534,50 @@ Input:
 "-2147483648"
 ```
 
-Negative limit:
+At the final digit:
 
 ```text
-limit = -2147483648
+result = 214748364
+digit = 8
+sign = -1
 ```
 
-The algorithm can safely construct:
+First condition:
 
 ```text
-result = -2147483648
+214748364 > 214748364
+False
 ```
 
-No overflow occurs.
+Second condition:
 
-Final:
+```text
+214748364 == 214748364
+True
+
+8 > 8
+False
+```
+
+The number is accepted.
+
+Since `result` is a `long`, it can safely store:
+
+```text
+2147483648
+```
+
+Finally:
 
 ```java
-return -1 * -2147483648;
+return (int) (2147483648L * -1);
 ```
 
-Java returns:
+Output:
 
 ```text
 -2147483648
 ```
-
-This works because multiplying Integer.MIN_VALUE by -1 in Java still produces Integer.MIN_VALUE due to two's-complement integer overflow. The desired result is therefore preserved.
 
 ---
 
@@ -2542,15 +2588,16 @@ This works because multiplying Integer.MIN_VALUE by -1 in Java still produces In
 | "" | 0 | Empty string |
 | "   " | 0 | Only spaces |
 | "abc" | 0 | No initial digits |
-| "+" | 0 | No digit after sign |
-| "-" | 0 | No digit after sign |
-| "+-12" | 0 | Invalid second sign |
+| "+" | 0 | No digits after sign |
+| "-" | 0 | No digits after sign |
+| "+-12" | 0 | Invalid sign sequence |
 | "000123" | 123 | Leading zeros |
 | "000" | 0 | All zeros |
 | "123abc456" | 123 | Stop at first non-digit |
+| "2147483647" | 2147483647 | Exact positive maximum |
 | "2147483648" | 2147483647 | Positive overflow |
+| "-2147483648" | -2147483648 | Exact negative minimum |
 | "-2147483649" | -2147483648 | Negative overflow |
-| "  +0012" | 12 | Spaces, sign and leading zeros |
 
 ---
 
@@ -2558,46 +2605,72 @@ This works because multiplying Integer.MIN_VALUE by -1 in Java still produces In
 
 Let `n` be the length of the input string.
 
-| Complexity | Value | Explanation |
+| Complexity | Value | Reason |
 |---|---|---|
 | Time | O(n) | Each character is processed at most once |
-| Auxiliary Space | O(1) | Only a fixed number of variables |
+| Auxiliary Space | O(1) | Fixed number of variables |
 
-**Optimal:** O(n) time and O(1) auxiliary space.
+The long accumulator does not change the asymptotic space complexity.
 
 ---
 
 ## 14. Common Mistakes
 
-1. Skipping spaces anywhere instead of only at the beginning.
-2. Accepting multiple signs.
-3. Continuing to read digits after encountering a letter.
-4. Using `Integer.parseInt()` without overflow handling.
+1. Comparing `char` directly with integer digits instead of `'0'` and `'9'`.
+2. Forgetting to skip leading spaces.
+3. Accepting multiple signs.
+4. Continuing after encountering a non-digit.
 5. Checking overflow after multiplication.
-6. Assuming positive and negative integer limits are symmetrical.
-7. Trying to store 2147483648 in a positive `int`.
-8. Forgetting to return 0 when no digits are found.
+6. Using `int` for the absolute magnitude of the negative minimum.
+7. Forgetting to apply the sign.
+8. Casting to `int` before applying the sign.
+
+Correct final conversion:
+
+```java
+return (int) (result * sign);
+```
 
 ---
 
 ## 15. Interview Explanation
 
-"I solve this problem using a single-pass string traversal. First, I skip leading spaces and identify the optional sign. Then I process consecutive digits. I use negative accumulation because Java's negative integer range has one additional value compared with its positive range. Before multiplying by 10 and subtracting the next digit, I check both overflow conditions. If overflow is detected, I return the corresponding integer boundary. Otherwise, I apply the sign and return the final result."
+"I use a single-pass traversal. First, I skip leading spaces and identify the optional sign. Then I process consecutive digits, converting each character into its numeric value. I use a long accumulator so that the absolute magnitude of the minimum 32-bit integer can also be represented. Before appending each digit, I check whether the next value would exceed the integer boundary. If overflow is detected, I return the corresponding integer limit. Otherwise, I apply the sign and return the result."
 
 ---
 
 ## 16. Revision Checklist
 
-- [ ] Understand the atoi rules.
-- [ ] Understand leading whitespace handling.
+- [ ] Understand atoi rules.
+- [ ] Understand leading spaces.
 - [ ] Understand sign identification.
 - [ ] Understand character-to-digit conversion.
-- [ ] Understand positive integer overflow.
-- [ ] Understand negative integer overflow.
-- [ ] Understand why negative accumulation is safer.
-- [ ] Dry-run positive and negative inputs.
-- [ ] Test both integer boundaries.
-- [ ] Solve independently without referring to notes.
+- [ ] Understand why `long` is used.
+- [ ] Understand `Integer.MAX_VALUE / 10`.
+- [ ] Understand why the final digit threshold is 7 or 8.
+- [ ] Understand the ternary operator.
+- [ ] Dry-run positive and negative numbers.
+- [ ] Test exact integer boundaries.
+- [ ] Implement independently.
 
+---
 
-**Final takeaway:** The most important concept in this problem is overflow detection before arithmetic operations. Negative accumulation is the cleanest way to support the complete Java `int` range.
+## 17. Git Commands
+
+```bash
+git add Strings/8-String-to-Integer-atoi.java Strings/8-String-to-Integer-atoi.md
+
+git commit -m "Add LeetCode 8 String to Integer atoi solution"
+
+git push origin main
+```
+
+Replace `main` if your current branch is different.
+
+---
+
+## 18. Final Takeaway
+
+The key learning from this problem is **overflow prevention before arithmetic operations**.
+
+The long accumulator approach is easier to understand because it preserves your original positive-number-building logic while safely handling the magnitude of the negative integer boundary.
