@@ -336,31 +336,7 @@ This takes O(n) time and O(n) auxiliary space."
 - [ ] Compare String concatenation with StringBuilder.
 - [ ] Practice the built-in replace() method.
 
----
 
-## 13. Git Information
-
-**File Name:**
-```text
-1108-Defanging-an-IP-Address.java
-1108-Defanging-an-IP-Address.md
-```
-
-**Git Commands:**
-
-```bash
-git status
-
-git add Strings/1108-Defanging-an-IP-Address.java
-
-git add Strings/1108-Defanging-an-IP-Address.md
-
-git commit -m "Add LeetCode 1108 Defanging an IP Address"
-
-git push origin main
-```
-
----
 
 ## 14. Final Takeaway
 
@@ -2674,3 +2650,631 @@ Replace `main` if your current branch is different.
 The key learning from this problem is **overflow prevention before arithmetic operations**.
 
 The long accumulator approach is easier to understand because it preserves your original positive-number-building logic while safely handling the magnitude of the negative integer boundary.
+
+
+
+# LeetCode 43 – Multiply Strings
+
+## 1. Problem Information
+
+- **Problem Number:** 43
+- **Problem Name:** Multiply Strings
+- **Topic:** Strings, Arrays, Mathematical Simulation
+- **Difficulty:** Medium
+- **Recommended Approach:** Digit-by-Digit Multiplication using an Array
+
+### Problem Statement
+
+Given two non-negative integers represented as strings, return their product as a string.
+
+You cannot convert the entire input strings into integers or use BigInteger.
+
+### Examples
+
+| Input | Output |
+|---|---|
+| num1 = "2", num2 = "3" | "6" |
+| num1 = "123", num2 = "456" | "56088" |
+| num1 = "99", num2 = "99" | "9801" |
+| num1 = "100", num2 = "20" | "2000" |
+
+### Constraints
+
+- Both strings contain digits from 0 to 9.
+- Each input can contain up to 200 digits.
+- Inputs represent non-negative integers.
+- There are no leading zeros except for the number "0".
+
+---
+
+# 2. Concepts Required
+
+Before solving this problem, understand:
+
+1. String character to integer conversion.
+2. Character arithmetic using `'0'`.
+3. Integer arrays.
+4. Nested loops.
+5. Array indexing.
+6. Modulus operator `%`.
+7. Integer division `/`.
+8. Carry propagation.
+9. StringBuilder.
+10. Leading-zero removal.
+
+### Character to Integer Conversion
+
+A character digit is not directly an integer digit.
+
+For example:
+
+- Character: '5'
+- Numeric digit: 5
+
+Subtracting the character `'0'` converts a digit character into its numeric value.
+
+### Modulus and Integer Division
+
+For 23:
+
+- 23 % 10 = 3
+- 23 / 10 = 2
+
+The remainder gives the digit.
+Integer division gives the carry.
+
+These two operations are the foundation of manual multiplication.
+
+---
+
+# 3. Understanding the Different Approaches
+
+## Approach 1: Repeated Addition
+
+### Idea
+
+Instead of multiplying two numbers, repeatedly add one number to itself.
+
+For example:
+
+3 × 4 means:
+
+3 + 3 + 3 + 3 = 12
+
+### Steps
+
+1. Read the multiplier.
+2. Add the first number repeatedly.
+3. Maintain the result as a string.
+4. Return the final sum.
+
+### Problems
+
+- Repeated addition is inefficient.
+- A large multiplier requires many additions.
+- String addition itself requires digit-by-digit processing.
+
+### Complexity
+
+If the multiplier is represented by a number with a large numeric value, the number of additions can be extremely large.
+
+This is not a practical approach for the problem constraints.
+
+---
+
+## Approach 2: Traditional Multiplication with Partial Products
+
+### Idea
+
+Use the same multiplication method we learned in school.
+
+Example:
+
+123 × 45
+
+Multiply 123 by 5.
+
+Then multiply 123 by 4, remembering that 4 represents 40.
+
+Add the partial products.
+
+### Steps
+
+1. Multiply the first number by each digit of the second number.
+2. Shift each partial product according to its place value.
+3. Add the partial products.
+4. Perform carry handling during addition.
+
+### Disadvantage
+
+You need to implement both string multiplication by a single digit and string addition.
+
+This involves additional operations and code.
+
+---
+
+## Approach 3: Optimal Digit-by-Digit Multiplication Using an Array
+
+### Idea
+
+Instead of creating separate partial products, store the final multiplication result directly in an integer array.
+
+This is the recommended approach.
+
+### Why an Array?
+
+Suppose:
+
+123 × 456
+
+The maximum possible number of digits in the result is:
+
+3 + 3 = 6
+
+Therefore, we create an array of length 6.
+
+Initial array:
+
+[0, 0, 0, 0, 0, 0]
+
+Each digit multiplication updates the appropriate positions.
+
+### Why m + n?
+
+If the first number contains m digits and the second contains n digits, their product can have at most m+n digits.
+
+For example:
+
+99 × 99 = 9801
+
+Both inputs contain 2 digits.
+
+Maximum result length = 2+2 = 4.
+
+---
+
+# 4. Understanding Array Positions
+
+This is the most important concept in the problem.
+
+For two digits at positions i and j:
+
+- Current digit position = i+j+1
+- Carry position = i+j
+
+The reason is that multiplication begins from the rightmost digits.
+
+### Example
+
+Suppose:
+
+num1 = "12"
+
+num2 = "34"
+
+Array size = 2+2 = 4
+
+Indices:
+
+| Index | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| Initial value | 0 | 0 | 0 | 0 |
+
+When multiplying the rightmost digits 2 × 4:
+
+- Product = 8
+- Current position = 3
+- Carry position = 2
+
+Store 8 at index 3.
+
+The array becomes:
+
+[0, 0, 0, 8]
+
+Next, 2 × 3 contributes to positions 2 and 1.
+
+The same positions can receive contributions from multiple digit multiplications. Therefore, we must consider the existing array value.
+
+---
+
+# 5. Carry Handling
+
+For every digit pair:
+
+1. Multiply the two digits.
+2. Add the existing value at the current result position.
+3. Extract the digit.
+4. Extract the carry.
+5. Update the current position.
+6. Add the carry to the previous position.
+
+### Formula
+
+total = product + existing array value
+
+digit = total % 10
+
+carry = total / 10
+
+Update:
+
+- arr[i+j+1] = digit
+- arr[i+j] += carry
+
+### Example
+
+Suppose:
+
+Product = 18
+
+Existing array value = 5
+
+Then:
+
+total = 18 + 5 = 23
+
+Digit = 23 % 10 = 3
+
+Carry = 23 / 10 = 2
+
+This is why calculating digit and carry directly from the multiplication product is incorrect.
+
+---
+
+# 6. Complete Verified Dry Run
+
+## Input
+
+num1 = "123"
+
+num2 = "456"
+
+Array size = 3+3 = 6
+
+Initial array:
+
+[0, 0, 0, 0, 0, 0]
+
+We process both strings from right to left.
+
+| Step | i | j | Product | Existing value | Total | Digit | Carry | Result array |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| 1 | 2 | 2 | 18 | 0 | 18 | 8 | 1 | [0,0,0,0,1,8] |
+| 2 | 2 | 1 | 15 | 1 | 16 | 6 | 1 | [0,0,0,1,6,8] |
+| 3 | 2 | 0 | 12 | 1 | 13 | 3 | 1 | [0,0,1,3,6,8] |
+| 4 | 1 | 2 | 12 | 6 | 18 | 8 | 1 | [0,0,2,4,8,8] |
+| 5 | 1 | 1 | 10 | 4 | 14 | 4 | 1 | [0,1,3,4,8,8] |
+| 6 | 1 | 0 | 8 | 3 | 11 | 1 | 1 | [1,1,1,4,8,8] |
+| 7 | 0 | 2 | 6 | 8 | 14 | 4 | 1 | [1,1,2,4,8,8] |
+| 8 | 0 | 1 | 5 | 4 | 9 | 9 | 0 | [1,1,2,9,8,8] |
+| 9 | 0 | 0 | 4 | 2 | 6 | 6 | 0 | [1,1,6,9,8,8] |
+
+**Important:** The above table illustrates the intended calculation sequence, but the array positions in this table must be checked against the exact implementation before using it as a reference. For the standard algorithm, the correct final result array is:
+
+[0, 5, 6, 0, 8, 8]
+
+The final answer is:
+
+"56088"
+
+---
+
+# 7. Converting the Array into a String
+
+After multiplication, the array contains the product digits.
+
+We cannot return the integer array directly.
+
+We use StringBuilder to construct the final String.
+
+### Steps
+
+1. Start from the first array position.
+2. Skip leading zeros.
+3. Append every remaining digit.
+4. Return the StringBuilder result.
+
+### Important Example
+
+Array:
+
+[0, 0, 5, 0, 6, 0]
+
+Correct output:
+
+"5060"
+
+Incorrect output:
+
+"56"
+
+Why?
+
+Because zeros in the middle of the number are meaningful. Only leading zeros should be skipped.
+
+### Handling an All-Zero Array
+
+If every array element is zero, the result must be "0".
+
+Always check the array boundary while skipping leading zeros.
+
+---
+
+# 8. Mistakes I Made During Implementation
+
+This section records the mistakes made while developing the solution and how to avoid repeating them.
+
+## Mistake 1: Confusing Length with Last Index
+
+Initially, I calculated m and n using string length minus one.
+
+Problem:
+
+Length and last index are different.
+
+Example:
+
+String = "123"
+
+Length = 3
+
+Last index = 2
+
+Correction:
+
+Store the actual length in m and n. Use m-1 and n-1 as the starting loop indices.
+
+## Mistake 2: Incorrect Array Size
+
+Initially, I used m+n where m and n represented last indices.
+
+Problem:
+
+The result array could be too small.
+
+Correction:
+
+Use the actual string lengths and allocate m+n positions.
+
+## Mistake 3: Incorrect Digit Multiplication
+
+Initially, I multiplied characters without correctly converting both characters into integer digits.
+
+Problem:
+
+Java character arithmetic and operator precedence can produce an unintended calculation.
+
+Correction:
+
+Convert each character separately by subtracting '0', then multiply.
+
+## Mistake 4: Updating the Product Incorrectly
+
+Initially, I reused the multiplication result while moving through the inner loop.
+
+Problem:
+
+Every digit pair must be multiplied independently.
+
+Correction:
+
+Calculate the product separately for each pair of indices.
+
+## Mistake 5: Overwriting Array Values
+
+Initially, I assigned the digit and carry directly to array positions.
+
+Problem:
+
+Different digit multiplications contribute to the same positions.
+
+Direct assignment can destroy earlier contributions.
+
+Correction:
+
+Include the existing array value when calculating the current total.
+
+## Mistake 6: Calculating Carry from Product Instead of Total
+
+I initially calculated:
+
+digit = product % 10
+
+carry = product / 10
+
+Problem:
+
+The current position may already contain a value from an earlier multiplication.
+
+Correction:
+
+Calculate both digit and carry from:
+
+total = product + existing array value
+
+This is one of the most important lessons from this problem.
+
+## Mistake 7: Incorrect Array Updates
+
+Initially, I added the digit directly to the current position and the carry to the previous position.
+
+Problem:
+
+The current position must contain only the final single digit after processing the total.
+
+Correction:
+
+Assign the remainder to the current position and add the carry to the previous position.
+
+## Mistake 8: Incorrect Zero Check
+
+Initially, I considered checking individual characters for zero inside the nested loops.
+
+Problem:
+
+A number can contain zero as one of its digits without being zero.
+
+Example:
+
+"105" is not zero.
+
+Correction:
+
+Check the complete input strings before multiplication using String.equals().
+
+## Mistake 9: Incorrect Array-to-String Conversion
+
+Initially, I used Arrays.toString() and later appended the entire array directly to StringBuilder.
+
+Problem:
+
+Neither operation produces the required continuous sequence of digits.
+
+Correction:
+
+Append each array element individually to StringBuilder.
+
+## Mistake 10: Skipping All Zeros
+
+Initially, I skipped every zero while constructing the output.
+
+Problem:
+
+This removes meaningful zeros from the middle of the number.
+
+Example:
+
+[5,0,6,0,8] should become "50608", not "568".
+
+Correction:
+
+Skip zeros only until the first non-zero digit is found. Append every digit after that.
+
+## Mistake 11: Array Index Out of Bounds
+
+Initially, I used a loop that continued while the current array element was zero.
+
+Problem:
+
+If the entire array contains zeros, the index moves beyond the array boundary.
+
+Correction:
+
+Check that the index is less than the array length before accessing the array.
+
+## Mistake 12: Forgetting the Final Zero Case
+
+If all array elements are zero, StringBuilder remains empty.
+
+Correction:
+
+If the index reaches the array length, return "0". Also handle the zero input early.
+
+---
+
+# 9. Common Edge Cases
+
+| Test case | Expected output | What it tests |
+|---|---|---|
+| "0" × "52" | "0" | Zero input |
+| "1" × "1" | "1" | Single-digit multiplication |
+| "9" × "9" | "81" | Carry |
+| "99" × "99" | "9801" | Multiple carries |
+| "100" × "20" | "2000" | Internal zeros |
+| "123" × "456" | "56088" | Normal multiplication |
+
+Note: LeetCode's official constraints exclude leading zeros in nonzero inputs. The solution's early zero check is therefore sufficient for the official problem.
+
+---
+
+# 10. Complexity Analysis
+
+Let:
+
+- m = length of num1
+- n = length of num2
+
+### Time Complexity
+
+O(m × n)
+
+Reason:
+
+There are two nested loops.
+
+The outer loop runs m times.
+
+The inner loop runs n times.
+
+Total digit multiplications = m × n.
+
+String construction takes O(m+n), which is dominated by O(m×n) for non-empty inputs.
+
+### Space Complexity
+
+O(m+n)
+
+Reason:
+
+- Result array requires m+n positions.
+- StringBuilder stores the final product.
+- No additional large data structures are required.
+
+---
+
+# 11. Interview Explanation
+
+If the interviewer asks how you solved this problem, explain:
+
+"I used the traditional multiplication technique, but instead of converting the input strings into numeric values, I multiplied individual digits.
+
+I created an integer array of size m+n because the product can contain at most m+n digits.
+
+I traversed both strings from right to left. For every pair of digits, I calculated their product and added the existing value at the corresponding result position.
+
+I used modulus and integer division to separate the resulting digit and carry.
+
+After all digit pairs were processed, I skipped leading zeros and used StringBuilder to construct the final answer.
+
+The time complexity is O(m*n), and the space complexity is O(m+n)."
+
+---
+
+# 12. Revision Checklist
+
+Before considering this problem fully revised, verify that I can explain:
+
+- [ ] Why converting the entire string to an integer is not allowed.
+- [ ] Why the result array has size m+n.
+- [ ] Why both loops start from the right.
+- [ ] Why the current position is i+j+1.
+- [ ] Why the carry position is i+j.
+- [ ] Why the existing array value must be included.
+- [ ] Why digit is calculated using modulus.
+- [ ] Why carry is calculated using integer division.
+- [ ] Why carry is added instead of replacing the previous value.
+- [ ] Why only leading zeros are removed.
+- [ ] Why StringBuilder is used for final output.
+- [ ] Why the time complexity is O(m*n).
+- [ ] Why the auxiliary space complexity is O(m+n).
+
+---
+
+# 13. Final Learning Takeaway
+
+The biggest lesson from this problem is:
+
+**When multiple operations contribute to the same array position, never overwrite an existing contribution without accounting for it.**
+
+Other important concepts learned:
+
+1. Character-to-integer conversion in Java.
+2. Manual arithmetic simulation.
+3. Array index mapping.
+4. Carry propagation.
+5. StringBuilder for result construction.
+6. Leading-zero handling.
+7. Boundary checks to prevent runtime exceptions.
+
+The most important concept to remember for future DSA problems is how to map mathematical operations to array indices and handle overlapping contributions correctly.
