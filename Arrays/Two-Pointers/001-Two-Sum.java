@@ -60,3 +60,9 @@ class Solution {
         return new int[]{};
     }
 }
+/*I would solve this problem using a HashMap. The idea is to traverse the array once and calculate the complement of
+ each element using target minus the current element.
+ I store each previously visited element as a key and its index as a value in the HashMap. 
+ Before inserting the current element, I check whether its complement already exists in the HashMap. 
+ If it exists, I return the stored index and the current index. Otherwise, I insert the current element and continue traversing.
+ This approach takes O(N) average time complexity and O(N) auxiliary space complexity. */
