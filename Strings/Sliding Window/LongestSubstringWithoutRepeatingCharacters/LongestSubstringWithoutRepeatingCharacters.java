@@ -1,4 +1,4 @@
-```java
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,6 +27,7 @@ import java.util.Set;
  */
 
 class Solution {
+    
     public int lengthOfLongestSubstring(String s) {
 
         // Stores unique characters in the current window
@@ -75,4 +76,3 @@ class Solution {
  * Input: ""          Output: 0
  * Input: "abcdef"    Output: 6
  */
-```
