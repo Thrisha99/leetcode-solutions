@@ -12,7 +12,17 @@
  * 2. Traverse from RIGHT to LEFT using one variable `right`
  *    to maintain the product of all elements to the RIGHT.
  * 3. Multiply left product × right product to get the answer.
- * 
+ 
+ *
+ * *Steps to follow:
+ 1.declare result arr 
+ 2.intiiale its 1st elelment with 1 .
+ 3.traverse i from 1 to n and product of arr[i-1]*nums[i-1] which is the left product of i element
+ 4.initilize r=1
+ 5. traverse j f from n-1 to 0 .
+ 6. then calc arr[j] =r*arr[j] .
+ 7. update r with nums[j]****
+ 
  * FOR EACH INDEX:
 
         LEFT     CURRENT     RIGHT
